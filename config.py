@@ -27,7 +27,5 @@ def log_setup(loglevel, logfile):
 
 log_setup(loglevel, logfile)
             
-
-
-    
-
+BQ_PROJECT = 'ut-dws-udrc-dev'
+BQ_DATASET = 'ADHOC'

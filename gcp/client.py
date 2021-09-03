@@ -9,32 +9,27 @@ from google.cloud import storage
 from google.cloud import firestore
 
 
-def get_client(service_name: str):
-    """get_client
-
-    Args:
-        service_name (str): full name of application service (storage, bigquery, firestore)
+def get_bigquery_client() -> bigquery.Client:
+    """[summary]
 
     Returns:
-        google.Client: client for given service
+        bigquery.Client: [description]
     """
-    supported_clients = {
-        'firestore': firestore.Client(),
-        'storage': storage.Client(),
-        'bigquery': bigquery.Client(),
-    }
-    return supported_clients[service_name]
-
-def get_bigquery_client() -> bigquery.Client:
     return bigquery.Client()
 
+
 def get_gcs_client() -> storage.Client:
+    """[summary]
+
+    Returns:
+        storage.Client: [description]
+    """
     return storage.Client()
 
 def get_firestore_client() -> firestore.Client:
+    """[summary]
+
+    Returns:
+        firestore.Client: [description]
+    """
     return firestore.Client()
-
-
-if __name__ == "__main__":
-    for service in ['firestore', 'storage', 'bigquery']:
-        assert get_client(service) is not None
