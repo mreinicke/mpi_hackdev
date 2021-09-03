@@ -6,6 +6,9 @@ import pytest
 from config import logfile
 from time import strftime,gmtime
  
+
+collect_ignore = ["test_hello.py"]
+
 # store history of failures per test class name and per index in parametrize (if parametrize used)
 _test_failed_incremental: Dict[str, Dict[Tuple[int, ...], str]] = {}
 
