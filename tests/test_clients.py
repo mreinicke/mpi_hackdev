@@ -1,10 +1,13 @@
 from google.cloud import bigquery
 from gcp.client import get_bigquery_client, get_gcs_client, get_firestore_client
 
+import os
 
-if __name__ == '__main__':
+import pytest 
 
-    def test_bigquery_read():
+@pytest.mark.incremental
+class TestBiguqeryIO:
+    def test_bigquery_read(self):
         bqclient = get_bigquery_client()
         # Perform a query.
         QUERY = (
@@ -15,17 +18,19 @@ if __name__ == '__main__':
         assert rows is not None
 
 
-    def test_bigquery_write():
+    def test_bigquery_write(self):
         bqclient = get_bigquery_client()
         QUERY = (
             'CREATE TABLE IF NOT EXISTS `ut-dws-udrc-dev.ADHOC.test_table_create_hacky` '
             'AS SELECT (1) as test_col FROM (select SESSION_USER())'
         )
         query_job = bqclient.query(QUERY)
-        print(query_job.result())
+        assert query_job.result() is not None
 
 
-    def test_bucket_load():
+@pytest.mark.incremental
+class TestGCSIO:
+    def test_bucket_load(self):
         client = get_gcs_client()
         blobs = client.list_blobs(
             'hackathon-mpi-bucket', 
@@ -37,24 +42,25 @@ if __name__ == '__main__':
                 raw_download=True,
             )
 
-
-    def test_bucket_write():
+    def test_bucket_write(self):
         from google.cloud.storage import Blob
         client = get_gcs_client()
         bucket = client.get_bucket('hackathon-mpi-bucket')
         blob = Blob("index/test-file", bucket)
-        with open('README.md', 'rb') as file_obj:
+        fpath = os.path.join(os.getcwd(), 'tests', 'test_assets', 'test_file.txt')
+        with open(fpath, 'rb') as file_obj:
             print(blob.upload_from_file(file_obj))
 
 
-    def test_firestore_load():
+@pytest.mark.incremental
+class TestFirestoreIO:
+    def test_firestore_load(self):
         db = get_firestore_client()
         collection = db.collection('mpi-collection')
         for doc in collection.list_documents(page_size=1):
             print(doc)
 
-
-    def test_firestore_write():    
+    def test_firestore_write(self):    
         import random
         db = get_firestore_client()
         collection = db.collection('mpi-collection')
