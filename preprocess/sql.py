@@ -22,19 +22,22 @@ filters = {
     'middle_name': "LOWER(TRIM(REGEXP_REPLACE(<mapped_name>, '[^a-zA-Z0-9]', ''))) AS middle_name",
     'ssn': (
     "CASE "
-    "WHEN LENGTH(REGEXP_REPLACE(<mapped_name>, '[^0-9]', '')) != 9 "
+    "WHEN LENGTH(REGEXP_REPLACE(CAST(<mapped_name> AS STRING), '[^0-9]', '')) != 9 "
     "THEN NULL "
-    "ELSE REGEXP_REPLACE(<mapped_name>, '[^0-9]', '') "
+    "ELSE REGEXP_REPLACE(CAST(<mapped_name> AS STRING), '[^0-9]', '') "
     "END AS ssn"
     ),
     'ssid': "<mapped_name> AS ssid",
     'student_id': "<mapped_name> AS <partner_id>_student_id",
+    'gender': "<mapped_name> AS gender",
+    'birth_date': "<mapped_name> AS birth_date",
+    'ethnicity': "<mapped_name> AS ethnicity",
 }
 
 template_query = (
     "WITH \n"
     "\tsource AS ( \n"
-    "\tSELECT * FROM <tablename> \n"
+    "\tSELECT * FROM `<tablename>` \n"
     "\t), \n"
     "\tclean AS ( \n"
     "\tSELECT <filters> FROM source \n"

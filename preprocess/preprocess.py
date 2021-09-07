@@ -25,7 +25,7 @@ def preprocess_table(*args, **kwargs):
 
     logger.info(f'Created query_job {query_job.job_id}')
     while not query_job.done():  ## TODO: this can move await and the whole function can go async
-        time.sleep(1)
+        time.sleep(1)  ## TBD: use job.result() -> set exceptions for query failure.
 
     try:
         client.get_table(tablename)
@@ -33,8 +33,7 @@ def preprocess_table(*args, **kwargs):
     except NotFound:
         logger.error('Table {tablename} not created.')
         raise ValueError('Preprocessing failed.  Table creation query did not complete.')
-    except exception as e:
-        logger.error(e)
-        raise ValueError(e)
+    finally:
+        logger.error('TBD: MORE EXCEPTION CATCHING. CANNOT TELL IF INITIAL QUERY IS BAD!!!!!')
 
     return tablename

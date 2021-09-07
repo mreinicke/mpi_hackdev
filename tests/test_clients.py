@@ -1,6 +1,8 @@
 from google.cloud import bigquery
 from gcp.client import get_bigquery_client, get_gcs_client, get_firestore_client
 
+from config import GCS_BUCKET_NAME
+
 import os
 
 import pytest 
@@ -33,11 +35,11 @@ class TestGCSIO:
     def test_bucket_load(self):
         client = get_gcs_client()
         blobs = client.list_blobs(
-            'hackathon-mpi-bucket', 
+            GCS_BUCKET_NAME, 
             prefix='index/udrc.png')
         with open('test_file.png', 'wb+') as file_obj:
             client.download_blob_to_file(
-                'gs://hackathon-mpi-bucket/index/udrc.png',
+                f'gs://{GCS_BUCKET_NAME}/index/udrc.png',
                 file_obj,
                 raw_download=True,
             )
@@ -45,7 +47,7 @@ class TestGCSIO:
     def test_bucket_write(self):
         from google.cloud.storage import Blob
         client = get_gcs_client()
-        bucket = client.get_bucket('hackathon-mpi-bucket')
+        bucket = client.get_bucket(GCS_BUCKET_NAME)
         blob = Blob("index/test-file", bucket)
         fpath = os.path.join(os.getcwd(), 'tests', 'test_assets', 'test_file.txt')
         with open(fpath, 'rb') as file_obj:

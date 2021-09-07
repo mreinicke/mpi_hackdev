@@ -29,3 +29,11 @@ log_setup(loglevel, logfile)
             
 BQ_PROJECT = 'ut-dws-udrc-dev'
 BQ_DATASET = 'ADHOC'
+
+FIRESTORE_IDENTITY_POOL = config('FIRESTORE_IDENTITY_POOL', default=None)
+
+BIGQUERY_TEST_TABLE = config('BIGQUERY_TEST_TABLE', default=None)
+
+BIGQUERY_TEST_PREPROCESSED_TABLE = config('BIGQUERY_TEST_PREPROCESSED_TABLE', default=None)
+
+GCS_BUCKET_NAME = config('GCS_BUCKET_NAME', default=None)
