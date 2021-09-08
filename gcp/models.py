@@ -80,21 +80,19 @@ def build_mpi_record_from_row(row: dict, context: dict) -> MPIRecord:
 
 class NoSQLSerializer():
 
-    def __init__(self, model = MPIRecord):
-        self.model = model
+    def __init__(self, context: dict):
+        self.context = context
 
-    def _check_raw(self, raw):
-        assert 'mpi' in raw, 'Cannot marshal. Missing MPI in expected key group.'
-        assert 'guid' in raw, 'Cannot marshal.  Missing GUID in expected key group.'
-        return raw
+    def _check_row_context(self, row):
+        assert 'mpi' in row, 'Cannot marshal. Missing MPI in expected key group.'
+        assert 'guid' in self.context, 'Cannot marshal.  Missing GUID in expected key group.'
+        return row
 
-    def _marshal(self, raw):
-        def _is_field(x):
-            return x not in ['mpi', 'guid', 'score']
-
-        mpi = raw['mpi']
-        guid = raw['guid']
-        score = raw['score']
+    def _marshal(self, row):
+        return build_mpi_record_from_row(
+            row=row,
+            context=self.context
+        )
 
     def __call__(self, raw):
-        return self._marshal(self._check_raw(raw))
+        return self._marshal(self._check_row_context(raw))

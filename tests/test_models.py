@@ -11,6 +11,7 @@ from gcp.models import (
     filter_dict_for_allowed_pii,
     build_source_record_from_row,
     build_mpi_record_from_row,
+    NoSQLSerializer
     )
 from config import ALLOWED_PII
 
@@ -42,7 +43,7 @@ def generate_row() -> list:
 
 @pytest.fixture
 def example_data():
-    rows = [generate_row() for _ in range(10)]
+    rows = [generate_row() for _ in range(100)]
     context = generate_context()
     return rows, context
 
@@ -69,3 +70,11 @@ def test_mpi_record_marshal(example_data):
     mpi_record = build_mpi_record_from_row(row=rows[0], context=context)
     assert mpi_record.mpi == rows[0]['mpi']
 
+
+def test_serializer(example_data):
+    rows, context = example_data
+    serializer = NoSQLSerializer(context)
+    mpi_records = [serializer(row) for row in rows]
+    assert len(mpi_records) == len(rows)
+    for i, rec in enumerate(mpi_records):
+        assert rec.mpi == rows[i]['mpi']
