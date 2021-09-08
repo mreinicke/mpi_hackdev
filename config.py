@@ -37,3 +37,5 @@ BIGQUERY_TEST_TABLE = config('BIGQUERY_TEST_TABLE', default=None)
 BIGQUERY_TEST_PREPROCESSED_TABLE = config('BIGQUERY_TEST_PREPROCESSED_TABLE', default=None)
 
 GCS_BUCKET_NAME = config('GCS_BUCKET_NAME', default=None)
+
+ALLOWED_PII = config('ALLOWED_PII', cast=lambda v: [s.strip() for s in v.split(',')], default=None) 

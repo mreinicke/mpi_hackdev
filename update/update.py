@@ -33,9 +33,9 @@ def update_preprocessed_table(tablename: str) -> tuple:
     QUERY = f"""
     UPDATE `{tablename}`
     SET 
-        master_person_index = GENERATE_UUID(),
+        mpi = GENERATE_UUID(),
         prob_match = 1.0
-    WHERE master_person_index is NULL
+    WHERE mpi is NULL
     """
 
     err, _ = send_query(QUERY)
@@ -45,4 +45,5 @@ def update_preprocessed_table(tablename: str) -> tuple:
 def update_mpi_pool_from_table(tablename: str, guid: str) -> tuple:
     client = get_firestore_client()
     col = client.collection(FIRESTORE_IDENTITY_POOL)
+
 
