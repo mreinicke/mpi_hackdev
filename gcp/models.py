@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Optional
 
 from config import ALLOWED_PII
 
@@ -16,6 +16,25 @@ from config import ALLOWED_PII
 ###Data Models###
 #################
 
+class MPIVector(BaseModel):
+    mpi: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    ssn: Optional[int] = None
+    ssid: Optional[str] = None
+    middle_name: Optional[str] = None
+    ushe_student_id: Optional[str] = None
+    usbe_student_id: Optional[str] = None
+    gender: Optional[str] = None
+    ethnicity: Optional[str] = None
+    birth_date: Optional[str] = None
+    frequency_score: float
+
+    @property
+    def name_match_vector(self):
+        if (self.first_name is not None) and (self.last_name is not None):
+            raise NotImplementedError('Vectorizer not implemented yet')
+        return None
 
 
 ##################################
