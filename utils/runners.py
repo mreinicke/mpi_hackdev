@@ -1,4 +1,7 @@
-#async.py
+# runners.py
+
+import time
+from gcp.client import get_bigquery_client
 
 import asyncio 
 from functools import wraps, partial
@@ -28,3 +31,20 @@ def logger_wrap(func):
         return func(*args, **kwargs)
     
     return run
+
+
+# Run BigqueryQuery - Blocks until complete
+def send_query(query: str) -> tuple:
+    err = None
+    client = get_bigquery_client()
+
+    llog = logging.getLogger(__name__)
+    llog.info(f'Sending query: {query}')
+
+    query_job = client.query(query)
+    llog.info(f'Created query_job {query_job.job_id}')
+    try:
+        res = query_job.result()
+        return err, res
+    except Exception as e:
+        return e, None
