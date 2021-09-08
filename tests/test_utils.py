@@ -2,6 +2,11 @@
 
 import asyncio
 from utils.runners import async_wrap, logger_wrap, send_query
+from utils.embeds import AlphabetVectorizer
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 @async_wrap
 def long_function():
@@ -29,3 +34,8 @@ def test_send_query():
     res, err = send_query(query)
     assert err is None
     assert res is not None
+
+
+def test_alphabet_vectorizer():
+    clf = AlphabetVectorizer()
+    assert len(clf('test_str')) == 26
