@@ -6,6 +6,7 @@ from google.cloud.exceptions import NotFound
 
 from preprocess.sql import compose_preprocessed_table_query
 from gcp.client import get_bigquery_client
+from gcp.models import Context
 
 from utils.runners import logger_wrap
 from logging import exception, getLogger
@@ -16,9 +17,9 @@ logger = getLogger(__name__)
 
 
 @logger_wrap
-def preprocess_table(*args, **kwargs):
+def preprocess_table(context: Context):
     client = get_bigquery_client()
-    query, tablename = compose_preprocessed_table_query(*args, **kwargs)
+    query, tablename = compose_preprocessed_table_query(context)
 
     logger.info(f'Sending query: {query}')
     query_job = client.query(query)

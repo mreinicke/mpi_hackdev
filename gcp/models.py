@@ -42,9 +42,12 @@ class MPIVector(BaseModel):
 
 class Context(BaseModel):
     raw: str
+    parsed: Optional[dict] = None
 
     def load_raw(self):
-        return json.loads(self.raw)
+        if self.parsed is None:
+            self.parsed = json.loads(self.raw)
+        return self.parsed
 
     @property
     def guid(self) -> str:
@@ -57,6 +60,10 @@ class Context(BaseModel):
     @property
     def destination_tablename(self) -> str:
         return self.load_raw()['destination']
+
+    @property
+    def partner(self) -> str:
+        return self.load_raw()['partner']
 
     @property 
     def mapping(self):

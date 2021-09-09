@@ -1,6 +1,7 @@
 # preprocess.py
 
-from gcp.client import get_bigquery_client
+from gcp.models import Context
+
 from copy import copy
 
 from config import DEBUG
@@ -51,7 +52,7 @@ def replace_filter_components(colname: str, partner: str, query: str) -> str:
             .replace('<partner_id>', partner)
 
 
-def compose_preprocessing_query(mapping: dict, partner: str, tablename: str, template: str = template_query, pretty=False) -> str:
+def compose_preprocessing_query(context: Context, template: str = template_query, pretty=False) -> str:
     """compose preprocessing query
 
     Takes a mapping, partner ID, and table to generate a preprocessing query.
@@ -69,6 +70,10 @@ def compose_preprocessing_query(mapping: dict, partner: str, tablename: str, tem
     def _collect_template_filters(mapping: dict, partner: str) -> tuple:
         return tuple([replace_filter_components(mapping[k], partner, filters[k]) for k in mapping.keys()])
     
+    mapping = context.mapping
+    partner = context.partner
+    tablename = context.source_tablename
+
     s = copy(template)
     processing_queries = _collect_template_filters(mapping, partner)
     s = s\
@@ -82,14 +87,16 @@ def compose_preprocessing_query(mapping: dict, partner: str, tablename: str, tem
         return s.replace('\t', '').replace('\n', '')
 
 
-def compose_preprocessed_table_query(*args, **kwargs):
+def compose_preprocessed_table_query(context: Context):
     # Add the CREATE TABLE statement if making a new table
     suffix = ''
     if DEBUG:
         import random
         suffix = f'_DEBUG_{random.randint(1,99)}'  # Help identify debug tables created in bigquery
 
-    output_table_name = f"{kwargs['tablename'].strip('`')}_preprocessed{suffix}"
+    tablename = context.source_tablename
+
+    output_table_name = f"{tablename.strip('`')}_preprocessed{suffix}"
     query = f"CREATE TABLE `{output_table_name}` AS "\
-            + compose_preprocessing_query(*args, **kwargs)
+            + compose_preprocessing_query(context)
     return query, output_table_name
