@@ -70,6 +70,9 @@ class Context(BaseModel):
             return temp
 
         return _filter_mapped_columns(self.load_raw()['columns'])
+
+    def __get_item__(self, key):
+        return getattr(self, key)
                     
 
 
@@ -115,8 +118,8 @@ def filter_dict_for_allowed_pii(d: dict, allowed=ALLOWED_PII) -> dict:
     return nd
 
 
-def build_source_record_from_row(row: dict, context: dict) -> SourceRecord:
-    guid = context['guid']
+def build_source_record_from_row(row: dict, context: Context) -> SourceRecord:
+    guid = context.guid
     prob_match = row['prob_match']
     fields = filter_dict_for_allowed_pii(row)
     return SourceRecord(
@@ -126,7 +129,7 @@ def build_source_record_from_row(row: dict, context: dict) -> SourceRecord:
     )
 
 
-def build_mpi_record_from_row(row: dict, context: dict) -> MPIRecord:
+def build_mpi_record_from_row(row: dict, context: Context) -> MPIRecord:
     mpi = row['mpi']
     sources = [build_source_record_from_row(row, context)]
     return MPIRecord(
@@ -142,7 +145,7 @@ class NoSQLSerializer():
 
     def _check_row_context(self, row):
         assert 'mpi' in row, 'Cannot marshal. Missing MPI in expected key group.'
-        assert 'guid' in self.context, 'Cannot marshal.  Missing GUID in expected key group.'
+        assert len(self.context.guid) > 0, 'Cannot marshal.  Missing GUID in expected key group.'
         return row
 
     def _marshal(self, row):

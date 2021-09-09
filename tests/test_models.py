@@ -11,9 +11,10 @@ from gcp.models import (
     filter_dict_for_allowed_pii,
     build_source_record_from_row,
     build_mpi_record_from_row,
-    NoSQLSerializer
+    NoSQLSerializer,
+    Context
     )
-from config import ALLOWED_PII, BIGQUERY_TEST_TABLE
+from config import ALLOWED_PII, BIGQUERY_TEST_TABLE, BIGQUERY_TEST_PREPROCESSED_TABLE
 
 import logging
 logger = logging.getLogger(__name__)
@@ -22,8 +23,9 @@ logger = logging.getLogger(__name__)
 def generate_raw_ui_message() -> str:
     return json.dumps(
         {
-            "sourceTable": BIGQUERY_TEST_TABLE,
-            "guid": '1abc',
+            "sourceTable": BIGQUERY_TEST_PREPROCESSED_TABLE,
+            "guid": str(uuid4()),
+            'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC']),
             "operation":"new",
             "destination":"SPLIT_1_OF_2_LINKED_USBE_HS_COHORT_COMPLETION_SAMPLE",
             "columns":[
@@ -36,7 +38,9 @@ def generate_raw_ui_message() -> str:
                 {"name":"HS_COMPLETION_STATUS","outputs":{"DI":{"name":"HS_COMPLETION_STATUS"}}},
                 {"name":"ENTRY_DATE","outputs":{"DI":{"name":"ENTRY_DATE"}}},
                 {"name":"SCHOOL_YEAR","outputs":{"DI":{"name":"SCHOOL_YEAR"}}},
-                {"name":"ID","outputs":{"MPI":{"name":"STUDENT_ID"}}},
+                {"name":"FIRST_NAME","outputs":{"MPI":{"name":"first_name"}}},
+                {"name":"LAST_NAME","outputs":{"MPI":{"name":"last_name"}}},
+                {"name":"SSN","outputs":{"MPI":{"name":"ssn"}}},
             ]
         }
     )
@@ -47,11 +51,8 @@ def raw_ui_message():
     return generate_raw_ui_message()
 
 
-def generate_context() -> dict:
-    return {
-        'guid': str(uuid4()),
-        'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC'])
-    }
+def generate_context() -> Context:
+    return Context(raw=generate_raw_ui_message())
 
 
 def generate_row() -> list:
@@ -79,8 +80,6 @@ def example_data():
     return rows, context
 
 
-
-
 def test_row_key_filter(example_data):
     row = example_data[0][0]
     filtered = filter_dict_for_allowed_pii(row)
@@ -93,7 +92,7 @@ def test_source_record_marshal(example_data):
     rows, context = example_data
     r = build_source_record_from_row(row=rows[0], context=context)
     assert r is not None
-    assert r.guid == context['guid']
+    assert r.guid == context.guid
 
 
 def test_mpi_record_marshal(example_data):
@@ -111,5 +110,5 @@ def test_serializer(example_data):
         assert rec.mpi == rows[i]['mpi']
 
 
-def test_context_parsing(raw_ui_message):
+def test_raw_ui_message_is_str(raw_ui_message):
     assert type(raw_ui_message) == str

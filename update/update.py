@@ -16,7 +16,7 @@ from utils.loaders import load_bigquery_table
 from utils.runners import send_query
 
 from gcp.client import get_firestore_client
-from gcp.models import NoSQLSerializer
+from gcp.models import NoSQLSerializer, Context
 
 import logging
 logger = logging.getLogger(__name__)
@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 ### 1. Assign New MPIs ###
 ##########################
 
-def update_preprocessed_table(tablename: str) -> tuple:
+def update_preprocessed_table(context: Context) -> tuple:
     err = None
-    
+    tablename = context.tablename
     # Try to load table
     try:
         table = load_bigquery_table(tablename)
@@ -51,12 +51,13 @@ def update_preprocessed_table(tablename: str) -> tuple:
 ### 2. Update MPI Pool ###
 ##########################
 
-def update_mpi_pool_from_table(tablename: str, guid: str) -> tuple:
+def update_mpi_pool_from_table(context: Context) -> tuple:
     client = get_firestore_client()
     col = client.collection(FIRESTORE_IDENTITY_POOL)
 
 
-def get_rows_from_table(tablename: str) -> bigquery.table.RowIterator:
+def get_rows_from_table(context: Context) -> bigquery.table.RowIterator:
+    tablename = context.source_tablename
     query = f"SELECT * FROM `{tablename}`"
     err, rows = send_query(query)
     if err is None:
@@ -65,7 +66,8 @@ def get_rows_from_table(tablename: str) -> bigquery.table.RowIterator:
         raise err
 
 
-def serialize_rows_from_table(tablename: str, guid: str) -> tuple:
-    s = NoSQLSerializer(context={'guid':})
+def serialize_rows_from_table(context: Context) -> tuple:
+    tablename = context.source_tablename
+    s = NoSQLSerializer(context=context)
     rows = get_rows_from_table(tablename)
     return [s()]
