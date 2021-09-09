@@ -5,15 +5,46 @@ import pytest
 
 from uuid import uuid4
 from random import choice
+import json
 
 from gcp.models import (
-    SourceRecord, MPIRecord, 
     filter_dict_for_allowed_pii,
     build_source_record_from_row,
     build_mpi_record_from_row,
     NoSQLSerializer
     )
-from config import ALLOWED_PII
+from config import ALLOWED_PII, BIGQUERY_TEST_TABLE
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+def generate_raw_ui_message() -> str:
+    return json.dumps(
+        {
+            "sourceTable": BIGQUERY_TEST_TABLE,
+            "guid": '1abc',
+            "operation":"new",
+            "destination":"SPLIT_1_OF_2_LINKED_USBE_HS_COHORT_COMPLETION_SAMPLE",
+            "columns":[
+                {"name":"STUDENT_ID","outputs":{}},
+                {"name":"COHORT_TYPE","outputs":{"DI":{"name":"COHORT_TYPE"}}},
+                {"name":"COHORT_YEAR","outputs":{"DI":{"name":"COHORT_YEAR"}}},
+                {"name":"DISTRICT_ID","outputs":{"DI":{"name":"DISTRICT_ID"}}},
+                {"name":"SCHOOL_ID","outputs":{"DI":{"name":"SCHOOL_ID"}}},
+                {"name":"SCHOOL_NBR","outputs":{"DI":{"name":"SCHOOL_NBR"}}},
+                {"name":"HS_COMPLETION_STATUS","outputs":{"DI":{"name":"HS_COMPLETION_STATUS"}}},
+                {"name":"ENTRY_DATE","outputs":{"DI":{"name":"ENTRY_DATE"}}},
+                {"name":"SCHOOL_YEAR","outputs":{"DI":{"name":"SCHOOL_YEAR"}}},
+                {"name":"ID","outputs":{"MPI":{"name":"STUDENT_ID"}}},
+            ]
+        }
+    )
+
+
+@pytest.fixture
+def raw_ui_message():
+    return generate_raw_ui_message()
 
 
 def generate_context() -> dict:
@@ -78,3 +109,7 @@ def test_serializer(example_data):
     assert len(mpi_records) == len(rows)
     for i, rec in enumerate(mpi_records):
         assert rec.mpi == rows[i]['mpi']
+
+
+def test_context_parsing(raw_ui_message):
+    assert type(raw_ui_message) == str

@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 from pydantic import BaseModel
 from typing import List, Optional
+import json 
 
 from utils.embeds import AlphabetVectorizer
 
@@ -35,8 +36,43 @@ class MPIVector(BaseModel):
     @property
     def name_match_vector(self):
         if (self.first_name is not None) and (self.last_name is not None):
-            return v(self.first_name + self.last_name)
+            return ','.join(v(self.first_name + self.last_name))
         return None
+
+
+class Context(BaseModel):
+    raw: str
+
+    def load_raw(self):
+        return json.loads(self.raw)
+
+    @property
+    def guid(self) -> str:
+        return self.load_raw()['guid']
+
+    @property
+    def source_tablename(self) -> str:
+        return self.load_raw()['sourceTable']
+
+    @property
+    def destination_tablename(self) -> str:
+        return self.load_raw()['destination']
+
+    @property 
+    def mapping(self):
+        def _filter_mapped_columns(columns: list):
+            temp = {}
+            for column in columns:
+                if 'MPI' in column['outputs'].keys():
+                    table_column_name = column['name']
+                    common_name = column['outputs']['MPI']['name']
+                    temp[common_name] = table_column_name
+            return temp
+
+        return _filter_mapped_columns(self.load_raw()['columns'])
+                    
+
+
 
 
 ##################################
@@ -115,5 +151,5 @@ class NoSQLSerializer():
             context=self.context
         )
 
-    def __call__(self, raw):
-        return self._marshal(self._check_row_context(raw))
+    def __call__(self, row):
+        return self._marshal(self._check_row_context(row))

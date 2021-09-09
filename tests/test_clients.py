@@ -1,11 +1,32 @@
 from google.cloud import bigquery
-from gcp.client import get_bigquery_client, get_gcs_client, get_firestore_client
+from gcp.client import (
+    get_bigquery_client, 
+    get_gcs_client, 
+    get_firestore_client,
+    get_secrets_client,
+    get_service_account_credentials,
+)
 
 from config import GCS_BUCKET_NAME
 
 import os
 
 import pytest 
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+def test_secrets_client():
+    client = get_secrets_client()
+    # Access secret
+    response = client.access_secret_version(request={'name': 'projects/319293654677/secrets/mpi-sa-key/versions/latest'})
+    assert response.payload.data.decode("UTF-8") is not None
+
+
+def test_get_service_account_credentials():
+    assert get_service_account_credentials() is not None
+
 
 @pytest.mark.incremental
 class TestBiguqeryIO:
@@ -32,6 +53,10 @@ class TestBiguqeryIO:
 
 @pytest.mark.incremental
 class TestGCSIO:
+    def test_gcs_client(self):
+        client = get_gcs_client()
+        assert client is not None
+
     def test_bucket_load(self):
         client = get_gcs_client()
         blobs = client.list_blobs(

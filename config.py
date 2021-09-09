@@ -38,4 +38,6 @@ BIGQUERY_TEST_PREPROCESSED_TABLE = config('BIGQUERY_TEST_PREPROCESSED_TABLE', de
 
 GCS_BUCKET_NAME = config('GCS_BUCKET_NAME', default=None)
 
-ALLOWED_PII = config('ALLOWED_PII', cast=lambda v: [s.strip() for s in v.split(',')], default=None) 
+ALLOWED_PII = config('ALLOWED_PII', cast=lambda v: [s.strip() for s in v.split(',')], default=None)
+
+MPI_SERVICE_SECRET_NAME = config('MPI_SERVICE_SECRET_NAME', default=None)
