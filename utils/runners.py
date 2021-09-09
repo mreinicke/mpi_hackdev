@@ -6,6 +6,9 @@ from gcp.client import get_bigquery_client
 import asyncio 
 from functools import wraps, partial
 
+import queue
+from concurrent.futures import ThreadPoolExecutor
+
 import config
 import logging
 
@@ -48,3 +51,30 @@ def send_query(query: str) -> tuple:
         return err, res
     except Exception as e:
         return e, None
+
+
+# MultiThreading Handler
+
+class QueueJobHander():
+    """QueueJobHandler
+        Maintain logic to put items into and get items out of 
+        a thread-safe queue.  Wraps push function (infn) and pop function (outfn)
+        as futures.  Instantiates a threadpool executor.  Checks completeness.
+
+        V0.1 Built assuming only in_fn needs to work on sequence
+    """
+    def __init__(self, infn, outfn, sequence=None, num_threads=2):
+        self.infn = infn
+        self.outfn = outfn
+        self.queue = queue.Queue()
+        self.sequence = sequence
+        self.num_threads = num_threads
+
+    def run(self):
+        with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
+            infn = partial(self.infn, queue=self.queue)
+            outfn = partial(self.outfn, queue=self.queue)
+            in_future = executor.map(infn, self.sequence)
+            out_future = executor.submit(outfn)
+
+            return out_future.result()

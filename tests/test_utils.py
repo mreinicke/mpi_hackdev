@@ -1,7 +1,7 @@
 #test_utils.py
 
 import asyncio
-from utils.runners import async_wrap, logger_wrap, send_query
+from utils.runners import async_wrap, logger_wrap, send_query, QueueJobHander
 from utils.embeds import AlphabetVectorizer
 
 import logging
@@ -33,9 +33,30 @@ def test_send_query():
     query = "SELECT 1 FROM DUAL;"
     res, err = send_query(query)
     assert err is None
-    assert res is not None
+    assert res is not None  # Change to ensure (1) is returning as a row
 
 
 def test_alphabet_vectorizer():
     clf = AlphabetVectorizer()
     assert len(clf('test_str')) == 26
+
+
+def test_queue_job_handler_basic_io():
+    from queue import Queue
+    def _infn(message: str, queue: Queue, **kwargs):
+        queue.put(message)
+    def _outfn(*args, queue: Queue = None, **kwargs):
+        while True:
+            if queue.not_empty:
+                m = queue.get()
+                logger.debug(f'queue_handler: {m}')
+                if m == 'done':
+                    queue.task_done()
+                    break
+                queue.task_done()
+            
+    messages = ['I am a message', 'done']
+    handler = QueueJobHander(infn=_infn, outfn=_outfn, sequence=messages)
+    assert handler is not None
+    logger.debug('Starting queue handler')
+    handler.run()

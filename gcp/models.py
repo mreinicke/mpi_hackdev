@@ -2,19 +2,21 @@
 Model mapping for validated structs
 """
 
-
-
 import logging
 logger = logging.getLogger(__name__)
 
 from pydantic import BaseModel
 from typing import List, Optional
 
+from utils.embeds import AlphabetVectorizer
+
 from config import ALLOWED_PII
 
 #################
 ###Data Models###
 #################
+
+v = AlphabetVectorizer()
 
 class MPIVector(BaseModel):
     mpi: str
@@ -33,7 +35,7 @@ class MPIVector(BaseModel):
     @property
     def name_match_vector(self):
         if (self.first_name is not None) and (self.last_name is not None):
-            raise NotImplementedError('Vectorizer not implemented yet')
+            return v(self.first_name + self.last_name)
         return None
 
 
