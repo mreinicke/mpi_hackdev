@@ -16,17 +16,6 @@ from config import BIGQUERY_TEST_PREPROCESSED_TABLE
 import logging
 logger = logging.getLogger(__name__)
 
-def generate_input():
-    return {
-            'mapping': {
-                'first_name': 'FIRST_NAME',
-                'last_name': 'LAST_NAME', 
-                'ssn': 'SSN', 
-                # 'gender':'gender'
-                },
-            'partner': 'ADHOC',
-            'tablename': BIGQUERY_TEST_PREPROCESSED_TABLE
-            }
 
 @pytest.fixture
 def context():

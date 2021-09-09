@@ -3,10 +3,6 @@
 from typing import Dict, Tuple
 import pytest
 
-from config import logfile
-from time import strftime,gmtime
- 
-
 collect_ignore = ["test_hello.py"]
 
 # store history of failures per test class name and per index in parametrize (if parametrize used)
@@ -51,28 +47,3 @@ def pytest_runtest_setup(item):
             # if name found, test has failed for the combination of class name & test name
             if test_name is not None:
                 pytest.xfail("previous test failed ({})".format(test_name))
-
-
-class FileLogger():
-    def __init__(self, logfile):
-        self.logfile = logfile
-        self._write_to_file(f'Log Start', name=__name__)
-
-
-    def _write_to_file(self, message, name):
-        with open(logfile, 'a+') as f:
-            timestamp = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            f.writelines(f'{timestamp} {name} {message} \n')
-
-    def info(self, message, name='und'):
-        self._write_to_file(f'INFO: {message}', name)
-
-    def debug(self, message, name='und'):
-        self._write_to_file(f'DEBUG: {message}', name)
-
-    def error(self, message, name='und'):
-        self._write_to_file(f'ERROR: {message}', name)
-
-
-
-testlogger = FileLogger(logfile=logfile)
