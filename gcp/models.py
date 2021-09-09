@@ -106,6 +106,10 @@ class MPIRecord(BaseModel):
     mpi: str 
     sources: List[SourceRecord]
 
+    def as_dict(self):
+        d = dict(self)
+        d['sources'] = [dict(s) for s in d['sources']]
+        return d
 
 
 ## NoSQL Utility ##

@@ -8,6 +8,7 @@ from random import choice
 import json
 
 from gcp.models import (
+    MPIRecord,
     filter_dict_for_allowed_pii,
     build_source_record_from_row,
     build_mpi_record_from_row,
@@ -112,3 +113,12 @@ def test_serializer(example_data):
 
 def test_raw_ui_message_is_str(raw_ui_message):
     assert type(raw_ui_message) == str
+
+
+def test_mpi_model_as_dict(example_data):
+    rows, context = example_data
+    mpi_records = [build_mpi_record_from_row(row=row, context=context) for row in rows]
+    assert len(mpi_records) == len(rows)
+    assert type(mpi_records[0]) == MPIRecord
+    assert type(mpi_records[0].as_dict()) == dict
+    logger.debug(f"MPI Record as dict: \n{mpi_records[0].as_dict()}")
