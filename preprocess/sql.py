@@ -6,6 +6,9 @@ from copy import copy
 
 from config import DEBUG
 
+import logging 
+logger = logging.getLogger(__name__)
+
 ##########################################
 ### Standard Pre-Processing Transforms ###
 ##########################################
@@ -29,7 +32,9 @@ filters = {
     "END AS ssn"
     ),
     'ssid': "<mapped_name> AS ssid",
-    'student_id': "<mapped_name> AS <partner_id>_student_id",
+    'usbe_student_id': "<mapped_name> AS usbe_student_id",
+    'ushe_student_id': "<mapped_name> AS ushe_student_id",
+    'ustc_student_id': "<mapped_name> AS ustc_student_id",
     'gender': "<mapped_name> AS gender",
     'birth_date': "<mapped_name> AS birth_date",
     'ethnicity': "<mapped_name> AS ethnicity",
@@ -68,8 +73,12 @@ def compose_preprocessing_query(context: Context, template: str = template_query
     """
     
     def _collect_template_filters(mapping: dict, partner: str) -> tuple:
-        return tuple([replace_filter_components(mapping[k], partner, filters[k]) for k in mapping.keys()])
-    
+        try:
+            return tuple([replace_filter_components(mapping[k], partner, filters[k]) for k in mapping.keys()])
+        except KeyError as e:
+            logger.error(f'Invalid Mapping: {e}')
+            raise e
+
     mapping = context.mapping
     partner = context.partner
     tablename = context.source_tablename

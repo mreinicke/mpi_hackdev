@@ -26,6 +26,8 @@ def log_setup(loglevel, logfile):
         level=level)
 
 log_setup(loglevel, logfile)
+logging.getLogger(__name__)
+logging.info(f"Configured logging loglevel {loglevel}")
             
 BQ_PROJECT = 'ut-dws-udrc-dev'
 BQ_DATASET = 'ADHOC'
@@ -33,8 +35,8 @@ BQ_DATASET = 'ADHOC'
 FIRESTORE_IDENTITY_POOL = config('FIRESTORE_IDENTITY_POOL', default=None)
 
 BIGQUERY_TEST_TABLE = config('BIGQUERY_TEST_TABLE', default=None)
-
 BIGQUERY_TEST_PREPROCESSED_TABLE = config('BIGQUERY_TEST_PREPROCESSED_TABLE', default=None)
+BIGQUERY_LARGE = config('BIGQUERY_LARGE', default=None)
 
 GCS_BUCKET_NAME = config('GCS_BUCKET_NAME', default=None)
 

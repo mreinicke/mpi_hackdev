@@ -2,7 +2,7 @@
 
 import pytest
 
-from config import BIGQUERY_TEST_TABLE, BIGQUERY_TEST_PREPROCESSED_TABLE
+from config import BIGQUERY_TEST_TABLE, BIGQUERY_TEST_PREPROCESSED_TABLE, BIGQUERY_LARGE
 
 from preprocess.sql import compose_preprocessing_query, compose_preprocessed_table_query
 from preprocess.preprocess import preprocess_table
@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 def generate_raw_ui_message() -> str:
     return json.dumps(
         {
-            "sourceTable": BIGQUERY_TEST_PREPROCESSED_TABLE,
+            "sourceTable": BIGQUERY_TEST_TABLE,
+            # "sourceTable": BIGQUERY_LARGE,
             "guid": str(uuid4()),
             'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC']),
             "operation":"new",
@@ -37,9 +38,12 @@ def generate_raw_ui_message() -> str:
                 {"name":"HS_COMPLETION_STATUS","outputs":{"DI":{"name":"HS_COMPLETION_STATUS"}}},
                 {"name":"ENTRY_DATE","outputs":{"DI":{"name":"ENTRY_DATE"}}},
                 {"name":"SCHOOL_YEAR","outputs":{"DI":{"name":"SCHOOL_YEAR"}}},
-                {"name":"FIRST_NAME","outputs":{"MPI":{"name":"first_name"}}},
-                {"name":"LAST_NAME","outputs":{"MPI":{"name":"last_name"}}},
-                {"name":"SSN","outputs":{"MPI":{"name":"ssn"}}},
+                {"name":"firstname","outputs":{"MPI":{"name":"first_name"}}},
+                {"name":"lastname","outputs":{"MPI":{"name":"last_name"}}},
+                {"name":"ssn","outputs":{"MPI":{"name":"ssn"}}},
+                {"name":"sid","outputs":{"MPI":{"name":"usbe_student_id"}}},
+                {"name":"middlename","outputs":{"MPI":{"name":"middle_name"}}},
+                {"name":"gender","outputs":{"MPI":{"name":"gender"}}},
             ]
         }
     )
@@ -67,10 +71,10 @@ class TestPreprocessing:
         logger.debug(fq)
 
 
-    # def test_full_preprocessing_bigquery(self, context):
-    #     res = preprocess_table(context)
-    #     assert res is not None
+    def test_full_preprocessing_bigquery(self, context):
+        res = preprocess_table(context)
+        assert res is not None
 
-    #     # Teardown (move to test teardown later)
-    #     client = get_bigquery_client()
-    #     client.delete_table(res, not_found_ok=False)  # table should be found else early error
+        # Teardown (move to test teardown later)
+        client = get_bigquery_client()
+        client.delete_table(res, not_found_ok=False)  # table should be found else early error
