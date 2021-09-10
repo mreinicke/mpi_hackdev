@@ -43,8 +43,11 @@ def test_alphabet_vectorizer():
 
 def test_queue_job_handler_basic_io():
     from queue import Queue
-    def _infn(message: str, queue: Queue, **kwargs):
-        queue.put(message)
+    def _infn(sequence, queue: Queue, **kwargs):
+        for message in sequence:
+            queue.put(message)
+        return 'complete'
+        
     def _outfn(*args, queue: Queue = None, **kwargs):
         while True:
             if queue.not_empty:

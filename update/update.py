@@ -29,8 +29,12 @@ logger = logging.getLogger(__name__)
 ##########################
 
 def update_preprocessed_table(context: Context) -> tuple:
+    """Update Preprocessed Table
+    
+        Genereate MPI for unmatched rows.  Set prob_match for those rows to 1.
+    """
     err = None
-    tablename = context.tablename
+    tablename = context.source_tablename
     # Try to load table
     try:
         load_bigquery_table(tablename)
@@ -61,11 +65,13 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     serializer = NoSQLSerializer(context=context)
 
     # Create the serializer function 
-    def _infn(row, queue: Queue = None, serializer = serializer) -> dict:
-        if row == 'done':  ## allow completion message to be queued by infn
-            queue.put(row)
-        else:
-            queue.put(serializer(dict(row)).as_dict())
+    def _infn(sequence = None, queue: Queue = None, serializer = serializer) -> dict:
+        for m in sequence:
+            if m == 'done':  ## allow completion message to be queued by infn
+                queue.put(m)
+            else:
+                queue.put(serializer(dict(m)).as_dict())
+        return 'complete'
 
     client = get_firestore_client()
     def _outfn(*args, queue: Queue = None, client=client, **kwargs):
@@ -78,6 +84,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
                     queue.task_done()
                     break
                 queue.task_done()
+        return 'complete'
 
     sequence = create_generator_from_iterators(
         get_rows_from_table(tablename=tablename),

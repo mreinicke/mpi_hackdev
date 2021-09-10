@@ -11,7 +11,7 @@ from update.update import (
 )
 from gcp.models import Context
 
-from config import BIGQUERY_TEST_PREPROCESSED_TABLE
+from config import BIGQUERY_TEST_PREPROCESSED_TABLE, BIGQUERY_LARGE_PREPROCESSED
 
 import logging
 logger = logging.getLogger(__name__)
@@ -39,4 +39,5 @@ def context():
 
 
 def test_threaded_update_handler(context):
-    update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    # update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)

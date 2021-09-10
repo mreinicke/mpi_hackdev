@@ -63,18 +63,18 @@ class QueueJobHander():
 
         V0.1 Built assuming only in_fn needs to work on sequence
     """
-    def __init__(self, infn, outfn, sequence=None, num_threads=2):
+    def __init__(self, infn, outfn, sequence=None, num_threads=2, queue_max_size=100):
         self.infn = infn
         self.outfn = outfn
-        self.queue = queue.Queue()
+        self.queue = queue.Queue(queue_max_size)
         self.sequence = sequence
         self.num_threads = num_threads
 
     def run(self):
         with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
-            infn = partial(self.infn, queue=self.queue)
+            infn = partial(self.infn, sequence=self.sequence, queue=self.queue)
             outfn = partial(self.outfn, queue=self.queue)
-            in_future = executor.map(infn, self.sequence)
             out_future = executor.submit(outfn)
+            in_future = executor.submit(infn)
 
             return out_future.result()
