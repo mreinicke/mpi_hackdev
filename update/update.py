@@ -33,7 +33,7 @@ def update_preprocessed_table(context: Context) -> tuple:
     tablename = context.tablename
     # Try to load table
     try:
-        table = load_bigquery_table(tablename)
+        load_bigquery_table(tablename)
     except Exception as e:
         return e, tablename
 

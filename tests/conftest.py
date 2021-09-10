@@ -3,6 +3,9 @@
 from typing import Dict, Tuple
 import pytest
 
+from config import logger
+logger.info('Setting up pytest.')
+
 collect_ignore = ["test_hello.py"]
 
 # store history of failures per test class name and per index in parametrize (if parametrize used)
