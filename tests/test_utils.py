@@ -1,7 +1,13 @@
 #test_utils.py
 
 import asyncio
-from utils.runners import async_wrap, logger_wrap, send_query, QueueJobHander
+from utils.runners import (
+    async_wrap, 
+    logger_wrap, 
+    send_query, 
+    QueueJobHander,
+    BatchFilter,
+)
 from utils.embeds import AlphabetVectorizer
 
 import logging
@@ -63,3 +69,7 @@ def test_queue_job_handler_basic_io():
     assert handler is not None
     logger.debug('Starting queue handler')
     handler.run()
+
+
+def test_batch_filter():
+    pass

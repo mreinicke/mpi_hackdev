@@ -15,6 +15,7 @@ from config import FIRESTORE_IDENTITY_POOL
 from google.cloud.firestore_v1 import collection, base_document
 from utils.loaders import load_bigquery_table, create_generator_from_iterators
 from utils.runners import send_query, QueueJobHander
+from utils.batch import Batch
 
 from gcp.client import get_firestore_client
 from gcp.models import NoSQLSerializer, Context
@@ -65,7 +66,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     serializer = NoSQLSerializer(context=context)
 
     # Create the serializer function 
-    def _infn(sequence = None, queue: Queue = None, serializer = serializer) -> dict:
+    def _infn(sequence = None, queue: Queue = None, serializer = serializer, context=context) -> dict:
         for m in sequence:
             if m == 'done':  ## allow completion message to be queued by infn
                 queue.put(m)
@@ -75,13 +76,18 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
 
     # Create the firestore write/update function
     client = get_firestore_client()
-    def _outfn(*args, queue: Queue = None, client=client, **kwargs):
+    def _outfn(*args, queue: Queue = None, client=client, context=context, **kwargs):
+        rowbatch = Batch(max_size=100, filter=mpi_exists)
         while True:
             if queue.not_empty:
                 m = queue.get()
                 if m != 'done':
-                    push_row_to_firestore(m, client)
+                    if rowbatch.add(m):
+                        continue
+                    else:
+                        filter_run_batch(batch=rowbatch, client=client, context=context)
                 else:
+                    filter_run_batch(batch=rowbatch, client=client, context=context)
                     queue.task_done()
                     break
                 queue.task_done()
@@ -102,6 +108,107 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     in_res, out_res = handler.run()
 
 
+def batch_add_documents(rows: tuple, client: firestore.Client, context: Context = None) -> bool:
+    """batch_add_documents
+
+        Create document reference objects for array of MPIRecord.as_dict() data.
+        Commits all records without checking existance. Batch failes as a group.
+    
+    Args:
+        rows (tuple): [description]
+        client (firestore.Client): [description]
+
+    Returns:
+        bool: True if commit successful.  Fail as a batch.
+    """
+    batch = client.batch()
+    col = client.collection(FIRESTORE_IDENTITY_POOL)
+    batch_size = 0
+
+    for row in rows:
+        doc_id = row.pop('mpi')
+        doc_ref = col.document(doc_id)
+        batch.set(doc_ref, row)
+        batch_size += 1
+    
+    try:
+        batch.commit()
+        logger.info(f"Committed batch of {batch_size} records")
+        return True
+    except Exception as e:
+        logger.error(e)
+        return False
+
+
+@firestore.transactional
+def batch_update_documents(rows: tuple, client: firestore.Client, context: Context = None) -> bool:
+    """batch_update_documents
+
+    Args:
+        rows (tuple): [description]
+        tranaction (firestore.Transaction): [description]
+
+    Returns:
+        bool: True if commit successful.  Fail as batch.
+    """
+    def _generate_doc_ref(row: dict, col: firestore.CollectionReference) -> firestore.DocumentReference:
+        mpi = row['mpi']
+        return col.document(mpi)
+
+    def _get_guid_index_in_sources(sources: list, guid: str) -> int:
+        guid_history = [i for i, s in enumerate(sources) if s['guid']==guid]
+        if len(guid_history) > 0:
+            return guid_history[0]
+        else:
+            return None
+
+    def _replace_source_at_index(sources, new_source, guid_index) -> list:
+        if guid_index is None:
+            sources.append(new_source)
+        else:
+            sources[guid_index] = new_source
+        return sources
+    # Create a transaction constructor
+    transaction = client.transaction()
+    # Create document references (lazy) for each row
+    doc_refs = [_generate_doc_ref(row) for row in rows]
+    # Fetch each document's data via transaction
+    snapshots = [ref.get(transaction=transaction) for ref in doc_refs]
+    # Iterate through each transaction and update sources
+    for i, snapshot in enumerate(snapshots):
+        current_sources = snapshot.get('sources')
+        new_source = rows[i]['sources'][0]
+        guid_index = _get_guid_index_in_sources(sources, context.guid)
+        sources = _replace_source_at_index(current_sources, new_source, guid_index)
+        transaction.update(doc_refs[i], {'sources': sources})
+
+
+def filter_run_batch(batch: Batch, client: firestore.Client, context: Context):
+    rows_to_add, rows_to_update = batch.filter('add', 'update')
+    batch_add_documents(
+        rows=rows_to_add, 
+        client=client,
+        context=context
+    )
+    batch_update_documents(
+        rows=rows_to_update,
+        client=client,
+        context=context,
+    )
+    batch.flush()
+
+
+def mpi_exists(rows, *args):
+    filtered = {
+        'add':[],
+        'update':[],
+    }
+    for arg in args:
+        assert arg in filtered.keys(), f'Invalid order. Must be of (rows, add, update) or (rows, update, add)'
+
+    return [filtered[val] for val in args]
+
+
 def get_rows_from_table(tablename=None) -> bigquery.table.RowIterator:
     query = f"SELECT * FROM `{tablename}`"
     err, rows = send_query(query)
@@ -111,7 +218,7 @@ def get_rows_from_table(tablename=None) -> bigquery.table.RowIterator:
         raise err
 
 
-def serialize_rows_from_table(context: Context, tablename=None) -> tuple:
+def serialize_rows_from_table(context: Context, tablename=None) -> tuple:  ## Deprecated for multi-threaded serialization
     if tablename is None:
         tablename = context.source_tablename
     s = NoSQLSerializer(context=context)

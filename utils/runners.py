@@ -77,4 +77,7 @@ class QueueJobHander():
             out_future = executor.submit(outfn)
             in_future = executor.submit(infn)
 
-            return out_future.result()
+            return in_future.result(), out_future.result()
+
+
+
