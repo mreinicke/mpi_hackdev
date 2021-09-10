@@ -73,6 +73,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
                 queue.put(serializer(dict(m)).as_dict())
         return 'complete'
 
+    # Create the firestore write/update function
     client = get_firestore_client()
     def _outfn(*args, queue: Queue = None, client=client, **kwargs):
         while True:
@@ -86,18 +87,19 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
                 queue.task_done()
         return 'complete'
 
+    # Combine the row iterator with a bunch of completion messages to stop all the threads
     sequence = create_generator_from_iterators(
         get_rows_from_table(tablename=tablename),
         ["done"]*(num_threads+1)
     )
 
+    # Initialize the queue/thread handler
     handler = QueueJobHander(
         infn=_infn,
         outfn=_outfn,
         sequence=sequence
     )
-
-    handler.run()
+    in_res, out_res = handler.run()
 
 
 def get_rows_from_table(tablename=None) -> bigquery.table.RowIterator:
