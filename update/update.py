@@ -10,14 +10,14 @@ Post processing and assignment after MPI classification is completed.
 
 from google.cloud import bigquery
 from google.cloud import firestore
-from config import FIRESTORE_IDENTITY_POOL
+from config import FIRESTORE_IDENTITY_POOL, MPI_VECTORS_TABLE
 
 from google.cloud.firestore_v1 import collection, base_document
 from utils.loaders import load_bigquery_table, create_generator_from_iterators
 from utils.runners import send_query, QueueJobHander
 from utils.batch import Batch
 
-from gcp.client import get_firestore_client
+from gcp.client import get_bigquery_client, get_firestore_client
 from gcp.models import NoSQLSerializer, Context
 
 from queue import Queue
@@ -68,6 +68,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     # Create the serializer function 
     def _infn(sequence = None, queue: Queue = None, serializer = serializer, context=context) -> dict:
         for m in sequence:
+            m = next(sequence)
             if m == 'done':  ## allow completion message to be queued by infn
                 queue.put(m)
             else:
@@ -77,15 +78,16 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     # Create the firestore write/update function
     client = get_firestore_client()
     def _outfn(*args, queue: Queue = None, client=client, context=context, **kwargs):
-        rowbatch = Batch(max_size=100, filter=mpi_exists)
+        rowbatch = Batch(max_size=450, filterfn=mpi_exists)
         while True:
             if queue.not_empty:
                 m = queue.get()
                 if m != 'done':
                     if rowbatch.add(m):
-                        continue
+                        pass
                     else:
                         filter_run_batch(batch=rowbatch, client=client, context=context)
+                        rowbatch.add(m)  ## Add returns false if max batch size has been reached.  Must run to flush batch.
                 else:
                     filter_run_batch(batch=rowbatch, client=client, context=context)
                     queue.task_done()
@@ -105,7 +107,9 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
         outfn=_outfn,
         sequence=sequence
     )
-    in_res, out_res = handler.run()
+    handler.run()
+
+
 
 
 def batch_add_documents(rows: tuple, client: firestore.Client, context: Context = None) -> bool:
@@ -121,6 +125,10 @@ def batch_add_documents(rows: tuple, client: firestore.Client, context: Context 
     Returns:
         bool: True if commit successful.  Fail as a batch.
     """
+    if len(rows) < 1:
+        return
+    logger.debug('Beginning batch add.')
+
     batch = client.batch()
     col = client.collection(FIRESTORE_IDENTITY_POOL)
     batch_size = 0
@@ -140,8 +148,10 @@ def batch_add_documents(rows: tuple, client: firestore.Client, context: Context 
         return False
 
 
+
+
 @firestore.transactional
-def batch_update_documents(rows: tuple, client: firestore.Client, context: Context = None) -> bool:
+def batch_update_documents(transaction: firestore.Transaction, client: firestore.Client, rows: tuple, context: Context = None) -> bool:
     """batch_update_documents
 
     Args:
@@ -168,6 +178,12 @@ def batch_update_documents(rows: tuple, client: firestore.Client, context: Conte
         else:
             sources[guid_index] = new_source
         return sources
+
+    # Circumvent all if no rows
+    if len(rows) < 1:
+        return
+    logger.debug('Beginning Batch Update')
+
     # Create a transaction constructor
     transaction = client.transaction()
     # Create document references (lazy) for each row
@@ -183,6 +199,8 @@ def batch_update_documents(rows: tuple, client: firestore.Client, context: Conte
         transaction.update(doc_refs[i], {'sources': sources})
 
 
+
+
 def filter_run_batch(batch: Batch, client: firestore.Client, context: Context):
     rows_to_add, rows_to_update = batch.filter('add', 'update')
     batch_add_documents(
@@ -191,6 +209,7 @@ def filter_run_batch(batch: Batch, client: firestore.Client, context: Context):
         context=context
     )
     batch_update_documents(
+        transaction=client.transaction(),
         rows=rows_to_update,
         client=client,
         context=context,
@@ -198,15 +217,33 @@ def filter_run_batch(batch: Batch, client: firestore.Client, context: Context):
     batch.flush()
 
 
+
+
 def mpi_exists(rows, *args):
+    def _check_mpis_in_vectors_table(rows: tuple) -> tuple:
+        mpis = [f"'{row['mpi']}'" for row in rows]
+        QUERY = f"""
+        SELECT mpi FROM `{MPI_VECTORS_TABLE}`
+        WHERE mpi in ({",".join(mpis)})"""
+        err, res = send_query(QUERY)
+        if err is None:
+            return tuple([dict(r)['mpi'] for r in res if r is not None])
+        raise(err)
+    # Query batch of rows to see which MPIs have vectors (are represented in pool)
+    existing_mpis = _check_mpis_in_vectors_table(rows)
+    # Sort the rows by whether there are existing mpi records and tag each group
     filtered = {
-        'add':[],
-        'update':[],
+        'add':tuple([row for row in rows if row['mpi'] not in existing_mpis]),
+        'update':tuple([row for row in rows if row['mpi'] in existing_mpis]),
     }
+
+    # Check the args for valid ordering.
     for arg in args:
         assert arg in filtered.keys(), f'Invalid order. Must be of (rows, add, update) or (rows, update, add)'
 
     return [filtered[val] for val in args]
+
+
 
 
 def get_rows_from_table(tablename=None) -> bigquery.table.RowIterator:
@@ -218,12 +255,16 @@ def get_rows_from_table(tablename=None) -> bigquery.table.RowIterator:
         raise err
 
 
+
+
 def serialize_rows_from_table(context: Context, tablename=None) -> tuple:  ## Deprecated for multi-threaded serialization
     if tablename is None:
         tablename = context.source_tablename
     s = NoSQLSerializer(context=context)
     rows = get_rows_from_table(tablename=tablename)
     return tuple([s(dict(r)).as_dict() for r in rows])
+
+
 
 
 def push_row_to_firestore(row: dict, client: firestore.Client):
@@ -258,6 +299,8 @@ def push_row_to_firestore(row: dict, client: firestore.Client):
         # logger.debug(f'Updated document {doc_id} with {sources}')  ## Heavy logging.  Only enable if necessary.
     else:
         col.add(row, doc_id)
+
+
 
 
 def push_rows_to_firestore(rows: tuple):  ## Deprecated for multi-threaded approach above

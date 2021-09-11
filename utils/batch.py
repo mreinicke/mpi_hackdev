@@ -36,12 +36,3 @@ class Batch():
     def size(self):
         return len(self.__store)
 
-
-
-
-class BatchFilter():
-    """BatchFilter
-        Sort and tag items in a batch.
-    """
-    def __init__(self) -> None:
-        pass
