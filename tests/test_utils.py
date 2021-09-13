@@ -6,7 +6,6 @@ from utils.runners import (
     logger_wrap, 
     send_query, 
     QueueJobHander,
-    BatchFilter,
 )
 from utils.embeds import AlphabetVectorizer
 

@@ -24,20 +24,20 @@ def context():
     )
 
 
-# def test_update_preprocessed_table(api_input):
-#     err, tablename = update_preprocessed_table(api_input['tablename'])
+def test_update_preprocessed_table(api_input):
+    err, tablename = update_preprocessed_table(api_input['tablename'])
 
 
-# def test_serialize_biguquery_row(context):
-#     rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-#     assert len(rows) > 0
+def test_serialize_biguquery_row(context):
+    rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    assert len(rows) > 0
 
 
-# def test_push_rows_to_firestore(context):
-#     rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-#     push_rows_to_firestore(rows)
+def test_push_rows_to_firestore(context):
+    rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    push_rows_to_firestore(rows)
 
 
-def test_threaded_update_handler(context):
-    # update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-    update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)
+# def test_threaded_update_handler(context):
+#     update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    # update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)

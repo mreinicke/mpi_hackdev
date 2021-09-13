@@ -37,15 +37,18 @@ def logger_wrap(func):
 
 
 # Run BigqueryQuery - Blocks until complete
-def send_query(query: str) -> tuple:
+def send_query(query: str, verbose=False) -> tuple:
+    llog = logging.getLogger(__name__)
+
     err = None
     client = get_bigquery_client()
 
-    llog = logging.getLogger(__name__)
-    llog.info(f'Sending query: {query}')
-
     query_job = client.query(query)
-    llog.info(f'Created query_job {query_job.job_id}')
+
+    if verbose:
+        llog.info(f'Sending query: {query}')
+        llog.info(f'Created query_job {query_job.job_id}')
+    
     try:
         res = query_job.result()
         return err, res
@@ -63,21 +66,26 @@ class QueueJobHander():
 
         V0.1 Built assuming only in_fn needs to work on sequence
     """
-    def __init__(self, infn, outfn, sequence=None, num_threads=2, queue_max_size=100):
+    def __init__(self, infn, outfn, sequence=None, num_threads=2, queue_max_size=100, in_threads_max=1, out_threads_max=1):
+
+        assert in_threads_max + out_threads_max <= num_threads, 'Not enough threads allocated for max in/out thread max'
+
         self.infn = infn
         self.outfn = outfn
         self.queue = queue.Queue(queue_max_size)
         self.sequence = sequence
         self.num_threads = num_threads
+        self.in_threads_max = in_threads_max
+        self.out_threads_max = out_threads_max
 
     def run(self):
         with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
             infn = partial(self.infn, sequence=self.sequence, queue=self.queue)
             outfn = partial(self.outfn, queue=self.queue)
-            out_future = executor.submit(outfn)
-            in_future = executor.submit(infn)
+            out_futures = [executor.submit(outfn)] * self.out_threads_max
+            in_futures = [executor.submit(infn)] * self.in_threads_max
 
-            return in_future.result(), out_future.result()
+            return [in_future.result() for in_future in in_futures], [out_future.result() for out_future in out_futures]
 
 
 

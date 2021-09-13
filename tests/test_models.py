@@ -84,8 +84,8 @@ def example_data():
 def test_row_key_filter(example_data):
     row = example_data[0][0]
     filtered = filter_dict_for_allowed_pii(row)
-    for k in ALLOWED_PII:
-        assert k in filtered.keys()
+    for k in filtered.keys():
+        assert k in ALLOWED_PII
         assert row[k] == filtered[k]
 
 

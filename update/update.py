@@ -97,7 +97,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
 
     # Combine the row iterator with a bunch of completion messages to stop all the threads
     sequence = create_generator_from_iterators(
-        get_rows_from_table(tablename=tablename),
+        get_rows_from_table(tablename=tablename),  ## TODO: pc.*, ex.exist FROM preprocessed_classified pc LEFT JOIN (SELECT mpi, (1) AS exists FROM mpi_vectors) ex.  One query for the whole operation.  
         ["done"]*(num_threads+1)
     )
 
@@ -105,7 +105,9 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     handler = QueueJobHander(
         infn=_infn,
         outfn=_outfn,
-        sequence=sequence
+        sequence=sequence,
+        num_threads=3,
+        out_threads_max=2,
     )
     handler.run()
 
