@@ -3,8 +3,9 @@
 import pytest
 import json
 
+from update import update_preprocessed_table
+
 from update.update import (
-    update_preprocessed_table, 
     serialize_rows_from_table,
     push_rows_to_firestore,
     update_firestore_from_table,
@@ -20,12 +21,13 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def context():
     return Context(
-        raw = json.dumps({'guid': 'testguid_test_update_1'})
+        raw = json.dumps({'guid': 'testguid_test_update_1', 'sourceTable': BIGQUERY_TEST_PREPROCESSED_TABLE})
     )
 
 
-def test_update_preprocessed_table(api_input):
-    err, tablename = update_preprocessed_table(api_input['tablename'])
+def test_update_preprocessed_table(context):
+    err, tablename = update_preprocessed_table(context)
+    assert tablename == context.source_tablename
 
 
 def test_serialize_biguquery_row(context):
@@ -33,9 +35,9 @@ def test_serialize_biguquery_row(context):
     assert len(rows) > 0
 
 
-def test_push_rows_to_firestore(context):
-    rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-    push_rows_to_firestore(rows)
+# def test_push_rows_to_firestore(context):
+#     rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+#     push_rows_to_firestore(rows)
 
 
 # def test_threaded_update_handler(context):
