@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 from pydantic import BaseModel
 from typing import List, Optional
-import json 
+import json
+import time
 
 from utils.embeds import AlphabetVectorizer
 
@@ -116,6 +117,7 @@ class MPIRecord(BaseModel):
     def as_dict(self):
         d = dict(self)
         d['sources'] = [dict(s) for s in d['sources']]
+        d['updated'] = time.time()
         return d
 
 

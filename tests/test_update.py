@@ -40,6 +40,6 @@ def test_serialize_biguquery_row(context):
 #     push_rows_to_firestore(rows)
 
 
-# def test_threaded_update_handler(context):
-#     update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+def test_threaded_update_handler(context):
+    update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)  ##TODO: teardown needed for multiple runs
     # update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)

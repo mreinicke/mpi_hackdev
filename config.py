@@ -28,7 +28,8 @@ def log_setup(loglevel, logfile):
 log_setup(loglevel, logfile)
 logger = logging.getLogger(__name__)
 logger.info(f"Configured logging loglevel {loglevel}")
-            
+
+GCP_PROJECT_ID = config('GCP_PROJECT_ID', default=None)
 FIRESTORE_IDENTITY_POOL = config('FIRESTORE_IDENTITY_POOL', default=None)
 MPI_VECTORS_TABLE = config('MPI_VECTORS_TABLE', default=None)
 
