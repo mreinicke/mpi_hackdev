@@ -7,8 +7,8 @@ from update import update_preprocessed_table
 
 from update.update import (
     serialize_rows_from_table,
-    push_rows_to_firestore,
     update_firestore_from_table,
+    push_rows_to_firestore
 )
 from gcp.models import Context
 
@@ -35,11 +35,11 @@ def test_serialize_biguquery_row(context):
     assert len(rows) > 0
 
 
-# def test_push_rows_to_firestore(context):  ## Deprecated.  Use threaded handler.
-#     rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-#     push_rows_to_firestore(rows)
+def test_push_rows_to_firestore(context):  ## Deprecated.  Use threaded handler.
+    rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    push_rows_to_firestore(rows)
 
 
-def test_threaded_update_handler(context):
-    update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)  ##TODO: teardown needed for multiple runs
+# def test_threaded_update_handler(context):
+#     update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
     # update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)

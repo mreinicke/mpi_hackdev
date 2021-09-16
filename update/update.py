@@ -40,6 +40,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
     def _infn(sequence = None, queue: Queue = None, serializer = serializer, context=context) -> dict:
         for m in sequence:
             m = next(sequence)
+            logger.debug(f"message infn: {m}")
             if m == 'done':  ## allow completion message to be queued by infn
                 queue.put(m)
             else:
@@ -218,10 +219,12 @@ def mpi_exists(rows, *args):
 
 
 
-
-def get_rows_from_table(tablename=None) -> bigquery.table.RowIterator:
+## TODO: This iterator is not working in combined iterator context.  
+##  Not all rows get returned all of the time via the returned RowIterator
+##  Further exploration into iterator behavior required.
+def get_rows_from_table(tablename=None, verbose=True) -> bigquery.table.RowIterator:
     query = f"SELECT * FROM `{tablename}`"
-    err, rows = send_query(query)
+    err, rows = send_query(query, verbose=verbose)
     if err is None:
         return rows
     else:

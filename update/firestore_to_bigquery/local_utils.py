@@ -1,11 +1,16 @@
 """
 firestore_to_bigquery.utils
 """
-from gcp.models import Context
+from utils.runners import send_query
+from gcp.client import get_bigquery_client, get_firestore_client
+from gcp.models import Context, MPIVector
+from config import FIRESTORE_IDENTITY_POOL, MPI_VECTORS_TABLE
+
+import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.value_provider import RuntimeValueProvider
 from google.cloud import firestore
-import apache_beam as beam
+
 import argparse
 import math
 from itertools import product
@@ -70,17 +75,11 @@ def create_select_mpi_query_from_context(beam_options: Context = None , tablenam
 		`{tablename}`;
 	"""
 
-# Generate a query to delete any MPI vectors with given MPI
-def create_delete_mpi_vector_records_from_context_mpi(mpi: str, beam_options: Context = None, tablename = None) -> str:
-	assert beam_options is not None or tablename is not None, 'Must provide either context object or tablename'
-	try:
-		tablename = beam_options.context.source_tablename + '_preprocessed'
-	except Exception as e:
-		logger.warn(e)
-
+# Generate a query to delete any MPI vectors with given List of MPIs
+def create_delete_mpis_from_mpi_list(mpi_list: list, tablename: str) -> str:
 	return f"""
-	DELETE FROM `{tablename}`
-	WHERE mpi = {mpi};
+	DELETE FROM `{MPI_VECTORS_TABLE}`
+	WHERE mpi IN (SELECT DISTINCT mpi FROM `{tablename}`);
 	"""
 
 
@@ -153,7 +152,7 @@ def create_mpi_vectors_from_firestore_document(mdoc:firestore.DocumentSnapshot, 
 
 		# Test vector fidelity by importing into a table and return distinct records
 		vectors = _filter_unique(vectors)
-		[v.update({'freq_score': _calc_freq_score(v, counts, index, freqfn)}) for v in vectors]
+		[v.update({'frequency_score': _calc_freq_score(v, counts, index, freqfn)}) for v in vectors]
 		return vectors
 
 	def _add_mpi_to_vects(vectors:list, mpi) -> list:
@@ -166,14 +165,44 @@ def create_mpi_vectors_from_firestore_document(mdoc:firestore.DocumentSnapshot, 
 	index, counts = _index_and_count_values(values)
 	mvects = _build_vectors(values=values, index=index, counts=counts, freqfn=freqfn)
 	mvects = _add_mpi_to_vects(mvects, mpi)
-	logger.debug(mvects)
-	# return mvects
+	return mvects
 
 
-class MPIVectorizer():
+
+class MPIVectorizer(beam.DoFn):
 	def __init__(self, freqfn = geomean) -> None:
 		self.freqfn = freqfn
 		self.vectfn = create_mpi_vectors_from_firestore_document
 
 	def __call__(self, doc: firestore.DocumentSnapshot):
-		return self.vectfn(doc, self.freqfn)
+		return [MPIVector(**vect) for vect in self.vectfn(doc, self.freqfn)]
+
+	def start_bundle(self):
+		self.firestore_client = get_firestore_client()
+		self.firestore_collection = self.firestore_client.collection(FIRESTORE_IDENTITY_POOL)
+
+	def process(self, element: str):
+		doc = self.firestore_collection.document(element).get()
+		return self(doc)
+
+	def finish_bundle(self):
+		self.firestore_client.close()
+
+
+
+class MPIVectorTableUpdate(beam.DoFn):
+	def __init__(self) -> None:
+		super().__init__()
+
+	def start_bundle(self):
+		self.bigquery_client = get_bigquery_client()
+
+	def send_query(self, query: str, verbose=False) -> tuple:
+		return send_query(query, verbose, client=self.bigquery_client, no_results=True)
+
+	def process(self, element: MPIVector):
+		insert_query = element.as_sql()
+		err, _ = self.send_query(insert_query, verbose = True)
+
+	def finish_bundle(self):
+		self.bigquery_client.close()

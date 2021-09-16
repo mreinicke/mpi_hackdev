@@ -122,3 +122,7 @@ def test_mpi_model_as_dict(example_data):
     assert type(mpi_records[0]) == MPIRecord
     assert type(mpi_records[0].as_dict()) == dict
     logger.debug(f"MPI Record as dict: \n{mpi_records[0].as_dict()}")
+
+
+def test_mpi_vector_model(example_data):
+    raise NotImplementedError('Write This Test, SQL, vectorizer, etc.')

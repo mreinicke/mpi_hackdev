@@ -30,21 +30,18 @@ def valid_mpis():
     return [d.id for d in docs.get()]
 
 
-def test_parser_raw(parser):
-    parsed = parser.parse_args(['-r', json.dumps({'sourceTable': 'sometablename'})])
-    assert type(parsed.r) == Context
-    assert parsed.r.source_tablename == 'sometablename'
+# def test_parser_raw(parser):
+#     parsed = parser.parse_args(['-r', json.dumps({'sourceTable': 'sometablename'})])
+#     assert type(parsed.r) == Context
+#     assert parsed.r.source_tablename == 'sometablename'
 
 
-def test_mpi_vectorizer(valid_mpis):
-    assert len(valid_mpis) > 0, 'No MPIs returned from fixture.'
-    vect = MPIVectorizer()
-    client = get_firestore_client()
-    col = client.collection(FIRESTORE_IDENTITY_POOL)
-    for mpi in valid_mpis:
-        doc = col.document(mpi).get()
-        logger.debug(vect(doc))
+# def test_mpi_vectorizer(valid_mpis):
+#     assert len(valid_mpis) > 0, 'No MPIs returned from fixture.'
+#     vect = MPIVectorizer()
+#     for mpi in valid_mpis:
+#         logger.debug(vect.process(mpi))
 
 
-# def test_pipeline():
-#     run_pipeline()
+def test_pipeline():
+    run_pipeline()

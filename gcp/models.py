@@ -12,7 +12,7 @@ import time
 
 from utils.embeds import AlphabetVectorizer
 
-from config import ALLOWED_PII
+from config import ALLOWED_PII, MPI_VECTORS_TABLE
 
 #################
 ###Data Models###
@@ -32,13 +32,35 @@ class MPIVector(BaseModel):
     gender: Optional[str] = None
     ethnicity: Optional[str] = None
     birth_date: Optional[str] = None
-    frequency_score: float
+    frequency_score: Optional[float] = None
 
     @property
     def name_match_vector(self):
         if (self.first_name is not None) and (self.last_name is not None):
-            return ','.join(v(self.first_name + self.last_name))
+            vector = v(self.first_name + self.last_name)
+            return '-'.join([str(v) for v in vector])
         return None
+
+    def as_sql(self, tablename=MPI_VECTORS_TABLE):
+        def _value_or_null(n):
+            v = getattr(self, n)
+            if v is not None:
+                if type(v) == str:
+                    return f"'{v}'"
+                return str(v)
+            return 'NULL'
+
+        columns_list = [
+            'mpi', 'first_name', 'last_name', 'ssn', 'ssid',
+            'middle_name', 'ushe_student_id', 'usbe_student_id',
+            'gender', 'ethnicity', 'birth_date', 'frequency_score', 
+            'name_match_vector'
+        ]
+
+        return f"""
+        INSERT INTO `{tablename}` ({','.join(columns_list)})
+        VALUES ({','.join([_value_or_null(c) for c in columns_list])})
+        """
 
 
 class Context(BaseModel):

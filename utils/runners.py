@@ -37,11 +37,12 @@ def logger_wrap(func):
 
 
 # Run BigqueryQuery - Blocks until complete
-def send_query(query: str, verbose=False) -> tuple:
+def send_query(query: str, verbose=False, client=None, no_results=False) -> tuple:
     llog = logging.getLogger(__name__)
 
     err = None
-    client = get_bigquery_client()
+    if client is None:
+        client = get_bigquery_client()
 
     query_job = client.query(query)
 
@@ -50,6 +51,8 @@ def send_query(query: str, verbose=False) -> tuple:
         llog.info(f'Created query_job {query_job.job_id}')
     
     try:
+        if no_results:
+            return err, None
         res = query_job.result()
         return err, res
     except Exception as e:

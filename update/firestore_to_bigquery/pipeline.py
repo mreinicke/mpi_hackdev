@@ -11,7 +11,10 @@ from .local_utils import (
     PipelineOptions,
     CustomArgParserFactory,
     LogPipelineOptionsFn,
-    create_select_mpi_query_from_context
+    create_select_mpi_query_from_context,
+    create_delete_mpis_from_mpi_list,
+    MPIVectorizer,
+    MPIVectorTableUpdate
 )
 
 from utils.runners import send_query
@@ -43,6 +46,7 @@ def run_pipeline():
         tablename = config.BIGQUERY_TEST_PREPROCESSED_TABLE
     else:
         tablename = None
+        raise NotImplementedError('Context tablename not implemented for this pipeline')
 
     # Get list of MPIs to work with.  Only MPIs under consideration need to 
     #   have MPI vectors updated
@@ -53,6 +57,13 @@ def run_pipeline():
 
     mpi_list = [r.mpi for r in res]
 
+    # Delete all mpi vectors in table where mpi in mpi_list
+    mpi_vector_delete_query = create_delete_mpis_from_mpi_list(mpi_list, tablename=tablename)
+    err, res = send_query(mpi_vector_delete_query, verbose=True)
+    if err is not None:
+        raise err
+
+    logger.warn('PIPELINE DEFINED')
     with beam.Pipeline(options=beam_options) as pipeline:
         # Add a branch for logging the ValueProvider value.
         _ = (
@@ -65,7 +76,7 @@ def run_pipeline():
         mpi_vectors = (
             pipeline
             | 'CreateMappedMPIPCollection' >> beam.Create(mpi_list)
-            | 'DebugPrint' >> beam.Map(print)
+            | 'VectorizeMPIDocuments' >> beam.ParDo(MPIVectorizer())
+            | 'UpdateMPIVectorsTable' >> beam.ParDo(MPIVectorTableUpdate())
         )
 
-    pipeline.run()
