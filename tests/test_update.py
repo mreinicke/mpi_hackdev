@@ -35,7 +35,7 @@ def test_serialize_biguquery_row(context):
     assert len(rows) > 0
 
 
-# def test_push_rows_to_firestore(context):
+# def test_push_rows_to_firestore(context):  ## Deprecated.  Use threaded handler.
 #     rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
 #     push_rows_to_firestore(rows)
 

@@ -6,11 +6,13 @@ from gcp.models import Context
 from gcp.client import get_firestore_client
 from config import FIRESTORE_IDENTITY_POOL
 
-from update.firestore_to_bigquery.local_utils import create_context_from_string
+from update.firestore_to_bigquery.local_utils import create_context_from_string, MPIVectorizer
 from update.firestore_to_bigquery.pipeline import run_pipeline
 import argparse
 import json 
 
+import logging 
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -24,8 +26,8 @@ def parser():
 def valid_mpis():
     client = get_firestore_client()
     col = client.collection(FIRESTORE_IDENTITY_POOL)
-    docs = col.where(u'sources', u'!=', None).limit(5)
-    return [d.doc_id for d in docs]
+    docs = col.where(u'updated', u'>', 0).limit(5)
+    return [d.id for d in docs.get()]
 
 
 def test_parser_raw(parser):
@@ -36,6 +38,13 @@ def test_parser_raw(parser):
 
 def test_mpi_vectorizer(valid_mpis):
     assert len(valid_mpis) > 0, 'No MPIs returned from fixture.'
+    vect = MPIVectorizer()
+    client = get_firestore_client()
+    col = client.collection(FIRESTORE_IDENTITY_POOL)
+    for mpi in valid_mpis:
+        doc = col.document(mpi).get()
+        logger.debug(vect(doc))
+
 
 # def test_pipeline():
 #     run_pipeline()
