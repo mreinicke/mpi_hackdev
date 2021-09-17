@@ -38,8 +38,10 @@ def test_serialize_biguquery_row(context):
 def test_push_rows_to_firestore(context):  ## Deprecated.  Use threaded handler.
     rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
     push_rows_to_firestore(rows)
+    raise NotImplementedError("Teardown not implemented for this method.  Cannot re-run test without manual record deletion at present")
 
 
 # def test_threaded_update_handler(context):
-#     update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+    # update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
     # update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)
+    # raise NotImplementedError("Teardown not implemented for this method.  Cannot re-run test without manual record deletion at present")
