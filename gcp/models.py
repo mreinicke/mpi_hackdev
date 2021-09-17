@@ -21,6 +21,7 @@ from config import ALLOWED_PII, MPI_VECTORS_TABLE
 v = AlphabetVectorizer()
 
 class MPIVector(BaseModel):
+    """Data model and serialization methods for BigQuery MPI_VECTORS table"""
     mpi: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -174,7 +175,7 @@ def build_mpi_record_from_row(row: dict, context: Context) -> MPIRecord:
 
 
 class NoSQLSerializer():
-
+    """Convert BigQuery row to Firestore NoSQL model"""
     def __init__(self, context: dict):
         self.context = context
 
