@@ -7,7 +7,7 @@ given context
 
 from update.prepare import delete_mpi_vectors_in_table
 import apache_beam as beam
-from .local_utils import (
+from update.firestore_to_bigquery.local_utils import (
     PipelineOptions,
     CustomArgParserFactory,
     LogPipelineOptionsFn,
@@ -80,3 +80,7 @@ def run_pipeline():
             | 'UpdateMPIVectorsTable' >> beam.ParDo(MPIVectorTableUpdate())
         )
 
+
+
+if __name__ == "__main__":
+    run_pipeline()

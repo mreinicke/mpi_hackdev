@@ -9,6 +9,7 @@ import json
 
 from gcp.models import (
     MPIRecord,
+    MPIVector,
     filter_dict_for_allowed_pii,
     build_source_record_from_row,
     build_mpi_record_from_row,
@@ -124,5 +125,8 @@ def test_mpi_model_as_dict(example_data):
     logger.debug(f"MPI Record as dict: \n{mpi_records[0].as_dict()}")
 
 
-def test_mpi_vector_model(example_data):
-    raise NotImplementedError('Write This Test, SQL, vectorizer, etc.')
+def test_mpi_vector_model_sql(example_data):
+    rows, context = example_data
+    mvect = MPIVector(**rows[0])
+    assert mvect is not None
+    assert len(mvect.as_sql()) > 0

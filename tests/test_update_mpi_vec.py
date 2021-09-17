@@ -7,7 +7,7 @@ from gcp.client import get_firestore_client
 from config import FIRESTORE_IDENTITY_POOL
 
 from update.firestore_to_bigquery.local_utils import create_context_from_string, MPIVectorizer
-from update.firestore_to_bigquery.pipeline import run_pipeline
+from pipeline_update_firestore_to_bigquery import run_pipeline
 import argparse
 import json 
 
@@ -30,17 +30,17 @@ def valid_mpis():
     return [d.id for d in docs.get()]
 
 
-# def test_parser_raw(parser):
-#     parsed = parser.parse_args(['-r', json.dumps({'sourceTable': 'sometablename'})])
-#     assert type(parsed.r) == Context
-#     assert parsed.r.source_tablename == 'sometablename'
+def test_parser_raw(parser):
+    parsed = parser.parse_args(['-r', json.dumps({'sourceTable': 'sometablename'})])
+    assert type(parsed.r) == Context
+    assert parsed.r.source_tablename == 'sometablename'
 
 
-# def test_mpi_vectorizer(valid_mpis):
-#     assert len(valid_mpis) > 0, 'No MPIs returned from fixture.'
-#     vect = MPIVectorizer()
-#     for mpi in valid_mpis:
-#         logger.debug(vect.process(mpi))
+def test_mpi_vectorizer(valid_mpis):
+    assert len(valid_mpis) > 0, 'No MPIs returned from fixture.'
+    vect = MPIVectorizer()
+    for mpi in valid_mpis:
+        assert vect.process(mpi) is not None
 
 
 def test_pipeline():
