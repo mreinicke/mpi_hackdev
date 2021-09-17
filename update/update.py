@@ -68,6 +68,7 @@ def update_firestore_from_table(context: Context, tablename=None, num_threads=2)
         return 'complete'
 
     # Combine the row iterator with a bunch of completion messages to stop all the threads
+    raise NotImplementedError('Sequence generator not currently working with bigquery RowIterator.  Missing last page of results on some tables.  Fix required.')
     sequence = create_generator_from_iterators(
         get_rows_from_table(tablename=tablename),  ## TODO: pc.*, ex.exist FROM preprocessed_classified pc LEFT JOIN (SELECT mpi, (1) AS exists FROM mpi_vectors) ex.  One query for the whole operation.  
         ["done"]*(num_threads+1)
