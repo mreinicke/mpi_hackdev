@@ -50,6 +50,9 @@ def run_pipeline():
 
     # Get list of MPIs to work with.  Only MPIs under consideration need to 
     #   have MPI vectors updated
+    # TODO: integrate into pipeline for better row handling.  Either fix permissions issues or
+    #   re-implement streaming from table, chunking, bundling, etc. with given client.  This implementation
+    #   cannot handle large tables as it will attempt to put a list of all affected MPIs into memory (ok for a couple thousand, not a couple million)
     mpi_query = create_select_mpi_query_from_context(args, tablename=tablename)
     err, res = send_query(mpi_query, verbose=True)
     if err is not None:
@@ -83,4 +86,5 @@ def run_pipeline():
 
 
 if __name__ == "__main__":
+    logging.getLogger().setLevel(logging.INFO)
     run_pipeline()
