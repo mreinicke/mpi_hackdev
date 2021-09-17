@@ -2,7 +2,7 @@
 firestore_to_bigquery pipeline
 
 An apache beam pipeline to update MPI vectors table from firestore
-given context
+given context.
 """
 
 from update.prepare import delete_mpi_vectors_in_table
@@ -58,7 +58,7 @@ def run_pipeline():
     mpi_list = [r.mpi for r in res]
 
     # Delete all mpi vectors in table where mpi in mpi_list
-    mpi_vector_delete_query = create_delete_mpis_from_mpi_list(mpi_list, tablename=tablename)
+    mpi_vector_delete_query = create_delete_mpis_from_mpi_list(tablename=tablename)
     err, res = send_query(mpi_vector_delete_query, verbose=True)
     if err is not None:
         raise err

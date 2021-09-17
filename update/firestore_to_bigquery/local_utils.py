@@ -76,7 +76,7 @@ def create_select_mpi_query_from_context(beam_options: Context = None , tablenam
 	"""
 
 # Generate a query to delete any MPI vectors with given List of MPIs
-def create_delete_mpis_from_mpi_list(mpi_list: list, tablename: str) -> str:
+def create_delete_mpis_from_mpi_list(tablename: str) -> str:
 	return f"""
 	DELETE FROM `{MPI_VECTORS_TABLE}`
 	WHERE mpi IN (SELECT DISTINCT mpi FROM `{tablename}`);
