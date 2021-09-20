@@ -4,6 +4,8 @@ import pytest
 import json
 
 from update import update_preprocessed_table
+from gcp.client import get_firestore_client
+
 
 from update.update import (
     serialize_rows_from_table,
@@ -12,13 +14,13 @@ from update.update import (
 )
 from gcp.models import Context
 
-from config import BIGQUERY_TEST_PREPROCESSED_TABLE, BIGQUERY_LARGE_PREPROCESSED
+from config import BIGQUERY_TEST_PREPROCESSED_TABLE, BIGQUERY_LARGE_PREPROCESSED, FIRESTORE_IDENTITY_POOL
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def context():
     return Context(
         raw = json.dumps({'guid': 'testguid_test_update_1', 'sourceTable': BIGQUERY_TEST_PREPROCESSED_TABLE})
@@ -35,13 +37,22 @@ def test_serialize_biguquery_row(context):
     assert len(rows) > 0
 
 
-def test_push_rows_to_firestore(context):  ## Deprecated.  Use threaded handler.
-    rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-    push_rows_to_firestore(rows)
-    raise NotImplementedError("Teardown not implemented for this method.  Cannot re-run test without manual record deletion at present")
 
 
-# def test_threaded_update_handler(context):
-    # update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
-    # update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)
-    # raise NotImplementedError("Teardown not implemented for this method.  Cannot re-run test without manual record deletion at present")
+@pytest.mark.incremental
+class TestUpdateFirestoreMethods:
+
+    def test_push_rows_to_firestore(self, context):
+        rows = serialize_rows_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+        mpis = [row['mpi'] for row in rows]
+        push_rows_to_firestore(rows)  ## Will pop mpi out of the dict.  cannot access mpi anymore. see above for mpis
+        client = get_firestore_client()
+        collection = client.collection(FIRESTORE_IDENTITY_POOL)
+        for mpi in mpis:
+            collection.document(mpi).delete()
+
+
+    def test_threaded_update_handler(self, context):
+        update_firestore_from_table(context, tablename=BIGQUERY_TEST_PREPROCESSED_TABLE)
+        # update_firestore_from_table(context, tablename=BIGQUERY_LARGE_PREPROCESSED)
+        raise NotImplementedError("Teardown not implemented for this method.  Cannot re-run test without manual record deletion at present")
