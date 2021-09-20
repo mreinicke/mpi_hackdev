@@ -27,10 +27,6 @@ class Settings(BaseSettings):
         env_file_encoding = 'utf-8'
 
 
-    @property
-    def GCS_BUCKET_FULL_PATH(self):
-        return 'gs://' + self.GCS_BUCKET_FULL_PATH + '/index'
-
 
 config = Settings()
 

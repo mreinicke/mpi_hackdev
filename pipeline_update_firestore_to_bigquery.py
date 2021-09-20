@@ -26,6 +26,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+GCS_BUCKET_FULL_PATH = 'gs://' + config.GCS_BUCKET_NAME + '/index'
+
 
 # Create Pipeline
 def run_pipeline(save_main_session=True):
@@ -39,8 +41,8 @@ def run_pipeline(save_main_session=True):
     beam_options = PipelineOptions(
         beam_args,
         project=config.GCP_PROJECT_ID,
-        temp_location=config.GCS_BUCKET_FULL_PATH,
-        staging_location=config.GCS_BUCKET_FULL_PATH,
+        temp_location=GCS_BUCKET_FULL_PATH,
+        staging_location=GCS_BUCKET_FULL_PATH,
         service_account_email='udrc-mpi-sa@ut-dws-udrc-dev.iam.gserviceaccount.com',
     )
     beam_options.view_as(SetupOptions).save_main_session = save_main_session
