@@ -126,6 +126,7 @@ REQUIRED_PACKAGES = [
     'pydantic',
     'pydot',
     'requests',
+    'python-decouple',
 ]
 
 setuptools.setup(
