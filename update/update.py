@@ -14,7 +14,7 @@ from config import FIRESTORE_IDENTITY_POOL, MPI_VECTORS_TABLE
 
 from google.cloud.firestore_v1 import collection, base_document
 from utils.loaders import load_bigquery_table, create_generator_from_iterators
-from utils.runners import send_query, QueueJobHander
+from utils.runners import send_query, QueueJobHander, logger_wrap
 from utils.batch import Batch
 
 from gcp.client import get_bigquery_client, get_firestore_client
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 ### 2. Update MPI Pool ###
 ##########################
 
+@logger_wrap
 def update_firestore_from_table(context: Context, tablename=None, num_threads=2) -> tuple:
     if tablename is None:
         tablename = context.source_tablename

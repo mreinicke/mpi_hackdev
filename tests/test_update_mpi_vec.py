@@ -7,7 +7,7 @@ from gcp.client import get_firestore_client
 from config import FIRESTORE_IDENTITY_POOL
 
 from update.firestore_to_bigquery.local_utils import create_context_from_string, MPIVectorizer
-from pipeline_update_firestore_to_bigquery import run_pipeline
+# from pipeline_update_firestore_to_bigquery import run_pipeline
 import argparse
 import json 
 
@@ -43,5 +43,5 @@ def test_mpi_vectorizer(valid_mpis):
         assert vect.process(mpi) is not None
 
 
-def test_pipeline():
-    run_pipeline()
+# def test_pipeline():
+#     run_pipeline()

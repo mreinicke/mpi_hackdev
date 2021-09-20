@@ -171,6 +171,17 @@ class MPIVectorizer(beam.DoFn):
 	def __init__(self, freqfn = geomean) -> None:
 		self.freqfn = freqfn
 		self.vectfn = create_mpi_vectors_from_firestore_document
+		self.__firestore_collection = None
+
+	@property
+	def firestore_collection(self):
+		if self.__firestore_collection is None:
+			self.__firestore_collection = get_firestore_client().collection(FIRESTORE_IDENTITY_POOL)
+		return self.__firestore_collection
+
+	@firestore_collection.setter
+	def firestore_collection(self, value):
+		self.__firestore_collection = value
 
 	def __call__(self, doc: firestore.DocumentSnapshot):
 		return [MPIVector(**vect) for vect in self.vectfn(doc, self.freqfn)]
