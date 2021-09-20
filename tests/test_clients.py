@@ -73,7 +73,7 @@ class TestGCSIO:
         from google.cloud.storage import Blob
         client = get_gcs_client()
         bucket = client.get_bucket(GCS_BUCKET_NAME)
-        blob = Blob("index/test-file", bucket)
+        blob = Blob("index/beamapp-vbrandon-0909.1000/test-file", bucket)
         fpath = os.path.join(os.getcwd(), 'tests', 'test_assets', 'test_file.txt')
         with open(fpath, 'rb') as file_obj:
             print(blob.upload_from_file(file_obj))

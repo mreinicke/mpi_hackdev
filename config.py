@@ -39,6 +39,7 @@ BIGQUERY_LARGE = config('BIGQUERY_LARGE', default=None)
 BIGQUERY_LARGE_PREPROCESSED = config('BIGQUERY_LARGE_PREPROCESSED', default=None)
 
 GCS_BUCKET_NAME = config('GCS_BUCKET_NAME', default=None)
+GCS_BUCKET_FULL_PATH = 'gs://' + GCS_BUCKET_NAME + '/index'
 
 ALLOWED_PII = config('ALLOWED_PII', cast=lambda v: [s.strip() for s in v.split(',')], default=None)
 

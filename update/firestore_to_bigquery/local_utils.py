@@ -171,17 +171,6 @@ class MPIVectorizer(beam.DoFn):
 	def __init__(self, freqfn = geomean) -> None:
 		self.freqfn = freqfn
 		self.vectfn = create_mpi_vectors_from_firestore_document
-		self.__firestore_collection = None
-
-	@property
-	def firestore_collection(self):
-		if self.__firestore_collection is None:
-			self.__firestore_collection = get_firestore_client().collection(FIRESTORE_IDENTITY_POOL)
-		return self.__firestore_collection
-
-	@firestore_collection.setter
-	def firestore_collection(self, value):
-		self.__firestore_collection = value
 
 	def __call__(self, doc: firestore.DocumentSnapshot):
 		return [MPIVector(**vect) for vect in self.vectfn(doc, self.freqfn)]
@@ -191,7 +180,11 @@ class MPIVectorizer(beam.DoFn):
 		self.firestore_collection = self.firestore_client.collection(FIRESTORE_IDENTITY_POOL)
 
 	def process(self, element: str):
-		doc = self.firestore_collection.document(element).get()
+		if hasattr(self, 'firestore_collection'):
+			firestore_collection = self.firestore_collection
+		else:
+			firestore_collection = get_firestore_client().collection(FIRESTORE_IDENTITY_POOL)
+		doc = firestore_collection.document(element).get()
 		return self(doc)
 
 	def finish_bundle(self):
@@ -211,7 +204,7 @@ class MPIVectorTableUpdate(beam.DoFn):
 
 	def process(self, element: MPIVector):
 		insert_query = element.as_sql()
-		err, _ = self.send_query(insert_query, verbose = True)
+		err, _ = self.send_query(insert_query, verbose = False)
 
 	def finish_bundle(self):
 		self.bigquery_client.close()

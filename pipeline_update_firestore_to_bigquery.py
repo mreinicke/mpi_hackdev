@@ -7,8 +7,9 @@ given context.
 
 from update.prepare import delete_mpi_vectors_in_table
 import apache_beam as beam
+from apache_beam.options.pipeline_options import PipelineOptions
+from apache_beam.options.pipeline_options import SetupOptions
 from update.firestore_to_bigquery.local_utils import (
-    PipelineOptions,
     CustomArgParserFactory,
     LogPipelineOptionsFn,
     create_select_mpi_query_from_context,
@@ -27,19 +28,22 @@ logger = logging.getLogger(__name__)
 
 
 # Create Pipeline
-def run_pipeline():
+def run_pipeline(save_main_session=True):
     # Setup Pipeline Options & Command Line Arguments
     parser_factory = CustomArgParserFactory()
     parser = parser_factory()
     args, beam_args = parser.parse_known_args()
 
+    # We use the save_main_session option because one or more DoFn's in this
+    # workflow rely on global context (e.g., a module imported at module level).
     beam_options = PipelineOptions(
         beam_args,
         project=config.GCP_PROJECT_ID,
-        temp_location=config.GCS_BUCKET_NAME,
-        staging_location=config.GCS_BUCKET_NAME,
+        temp_location=config.GCS_BUCKET_FULL_PATH,
+        staging_location=config.GCS_BUCKET_FULL_PATH,
         service_account_email='udrc-mpi-sa@ut-dws-udrc-dev.iam.gserviceaccount.com',
     )
+    beam_options.view_as(SetupOptions).save_main_session = save_main_session
 
     # Prepare pipeline assets.
     if config.DEBUG:
