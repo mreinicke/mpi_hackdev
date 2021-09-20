@@ -26,21 +26,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# Setup Pipeline Options
-parser_factory = CustomArgParserFactory()
-parser = parser_factory()
-args, beam_args = parser.parse_known_args()
-
-beam_options = PipelineOptions(
-    beam_args,
-    project=config.GCP_PROJECT_ID,
-    temp_location=config.GCS_BUCKET_NAME,
-    staging_location=config.GCS_BUCKET_NAME,
-    service_account_email='udrc-mpi-sa@ut-dws-udrc-dev.iam.gserviceaccount.com',
-)
-
 # Create Pipeline
 def run_pipeline():
+    # Setup Pipeline Options & Command Line Arguments
+    parser_factory = CustomArgParserFactory()
+    parser = parser_factory()
+    args, beam_args = parser.parse_known_args()
+
+    beam_options = PipelineOptions(
+        beam_args,
+        project=config.GCP_PROJECT_ID,
+        temp_location=config.GCS_BUCKET_NAME,
+        staging_location=config.GCS_BUCKET_NAME,
+        service_account_email='udrc-mpi-sa@ut-dws-udrc-dev.iam.gserviceaccount.com',
+    )
+
     # Prepare pipeline assets.
     if config.DEBUG:
         tablename = config.BIGQUERY_TEST_PREPROCESSED_TABLE
@@ -49,10 +49,11 @@ def run_pipeline():
         raise NotImplementedError('Context tablename not implemented for this pipeline')
 
     # Get list of MPIs to work with.  Only MPIs under consideration need to 
-    #   have MPI vectors updated
+    # have MPI vectors updated
     # TODO: integrate into pipeline for better row handling.  Either fix permissions issues or
-    #   re-implement streaming from table, chunking, bundling, etc. with given client.  This implementation
-    #   cannot handle large tables as it will attempt to put a list of all affected MPIs into memory (ok for a couple thousand, not a couple million)
+    # re-implement streaming from table, chunking, bundling, etc. with given client.  This implementation
+    # cannot handle large tables as it will attempt to put a list of all affected MPIs into memory 
+    # (ok for a couple thousand, not a couple million)
     mpi_query = create_select_mpi_query_from_context(args, tablename=tablename)
     err, res = send_query(mpi_query, verbose=True)
     if err is not None:
@@ -76,7 +77,7 @@ def run_pipeline():
             | 'LogOtherArgs' >> beam.ParDo(LogPipelineOptionsFn(args, message='Other Arguments'))
         )
 
-        mpi_vectors = (
+        _ = (
             pipeline
             | 'CreateMappedMPIPCollection' >> beam.Create(mpi_list)
             | 'VectorizeMPIDocuments' >> beam.ParDo(MPIVectorizer())

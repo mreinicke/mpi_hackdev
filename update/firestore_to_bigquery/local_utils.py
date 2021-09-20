@@ -1,14 +1,12 @@
+"""firestore_to_bigquery.local_utils
 """
-firestore_to_bigquery.utils
-"""
+
 from utils.runners import send_query
 from gcp.client import get_bigquery_client, get_firestore_client
 from gcp.models import Context, MPIVector
 from config import FIRESTORE_IDENTITY_POOL, MPI_VECTORS_TABLE
 
 import apache_beam as beam
-from apache_beam.options.pipeline_options import PipelineOptions
-from apache_beam.options.value_provider import RuntimeValueProvider
 from google.cloud import firestore
 
 import argparse
