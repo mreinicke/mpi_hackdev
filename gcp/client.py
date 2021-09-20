@@ -13,7 +13,7 @@ import json
 
 from google.oauth2 import service_account
 
-import config
+from settings import config
 
 import logging
 logger = logging.getLogger(__name__)

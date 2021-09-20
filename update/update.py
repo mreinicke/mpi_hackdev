@@ -10,17 +10,18 @@ Post processing and assignment after MPI classification is completed.
 
 from google.cloud import bigquery
 from google.cloud import firestore
-from config import FIRESTORE_IDENTITY_POOL, MPI_VECTORS_TABLE
 
 from google.cloud.firestore_v1 import collection, base_document
-from utils.loaders import load_bigquery_table, create_generator_from_iterators
+from utils.loaders import create_generator_from_iterators
 from utils.runners import send_query, QueueJobHander, logger_wrap
 from utils.batch import Batch
 
-from gcp.client import get_bigquery_client, get_firestore_client
+from gcp.client import get_firestore_client
 from gcp.models import NoSQLSerializer, Context
 
 from queue import Queue
+
+from settings import config
 
 import logging
 logger = logging.getLogger(__name__)
@@ -106,7 +107,7 @@ def batch_add_documents(rows: tuple, client: firestore.Client, context: Context 
     logger.debug('Beginning batch add.')
 
     batch = client.batch()
-    col = client.collection(FIRESTORE_IDENTITY_POOL)
+    col = client.collection(config.FIRESTORE_IDENTITY_POOL)
     batch_size = 0
 
     for row in rows:
@@ -199,7 +200,7 @@ def mpi_exists(rows, *args):
     def _check_mpis_in_vectors_table(rows: tuple) -> tuple:
         mpis = [f"'{row['mpi']}'" for row in rows]
         QUERY = f"""
-        SELECT mpi FROM `{MPI_VECTORS_TABLE}`
+        SELECT mpi FROM `{config.MPI_VECTORS_TABLE}`
         WHERE mpi in ({",".join(mpis)})"""
         err, res = send_query(QUERY)
         if err is None:
@@ -263,7 +264,7 @@ def push_row_to_firestore(row: dict, client: firestore.Client):
             sources[guid_index] = row['sources'][0]
         return sources
 
-    col = client.collection(FIRESTORE_IDENTITY_POOL)
+    col = client.collection(config.FIRESTORE_IDENTITY_POOL)
     doc_id = row.pop('mpi')  # Assign MPI to document ID
     guid = row['sources'][0]['guid']
     document = _get_doc(doc_id, col)

@@ -2,8 +2,6 @@
 
 import pytest
 
-from config import BIGQUERY_TEST_TABLE, BIGQUERY_TEST_PREPROCESSED_TABLE, BIGQUERY_LARGE
-
 from preprocess.sql import compose_preprocessing_query, compose_preprocessed_table_query
 from preprocess.preprocess import preprocess_table
 
@@ -14,6 +12,8 @@ from uuid import uuid4
 from random import choice
 import json
 
+from settings import config
+
 import logging 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def generate_raw_ui_message() -> str:
     return json.dumps(
         {
-            "sourceTable": BIGQUERY_TEST_TABLE,
+            "sourceTable": config.BIGQUERY_TEST_TABLE,
             # "sourceTable": BIGQUERY_LARGE,
             "guid": str(uuid4()),
             'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC']),
@@ -38,12 +38,9 @@ def generate_raw_ui_message() -> str:
                 {"name":"HS_COMPLETION_STATUS","outputs":{"DI":{"name":"HS_COMPLETION_STATUS"}}},
                 {"name":"ENTRY_DATE","outputs":{"DI":{"name":"ENTRY_DATE"}}},
                 {"name":"SCHOOL_YEAR","outputs":{"DI":{"name":"SCHOOL_YEAR"}}},
-                {"name":"firstname","outputs":{"MPI":{"name":"first_name"}}},
-                {"name":"lastname","outputs":{"MPI":{"name":"last_name"}}},
-                {"name":"ssn","outputs":{"MPI":{"name":"ssn"}}},
-                {"name":"sid","outputs":{"MPI":{"name":"usbe_student_id"}}},
-                {"name":"middlename","outputs":{"MPI":{"name":"middle_name"}}},
-                {"name":"gender","outputs":{"MPI":{"name":"gender"}}},
+                {"name":"FIRST_NAME","outputs":{"MPI":{"name":"first_name"}}},
+                {"name":"LAST_NAME","outputs":{"MPI":{"name":"last_name"}}},
+                {"name":"SSN","outputs":{"MPI":{"name":"ssn"}}},
             ]
         }
     )

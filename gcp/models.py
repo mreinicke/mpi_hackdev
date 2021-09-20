@@ -12,7 +12,7 @@ import time
 
 from utils.embeds import AlphabetVectorizer
 
-from config import ALLOWED_PII, MPI_VECTORS_TABLE
+from settings import config
 
 #################
 ###Data Models###
@@ -42,7 +42,7 @@ class MPIVector(BaseModel):
             return '-'.join([str(v) for v in vector])
         return None
 
-    def as_sql(self, tablename=MPI_VECTORS_TABLE):
+    def as_sql(self, tablename=config.MPI_VECTORS_TABLE):
         def _value_or_null(n):
             v = getattr(self, n)
             if v is not None:
@@ -146,7 +146,7 @@ class MPIRecord(BaseModel):
 
 ## NoSQL Utility ##
 # Build a serializer to convert from matched row <mpi + PII data + score>
-def filter_dict_for_allowed_pii(d: dict, allowed=ALLOWED_PII) -> dict:
+def filter_dict_for_allowed_pii(d: dict, allowed=config.ALLOWED_PII) -> dict:
     def _is_allowed(k: str) -> bool:
         return k in allowed
     

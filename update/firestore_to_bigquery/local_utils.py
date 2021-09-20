@@ -4,7 +4,6 @@
 from utils.runners import send_query
 from gcp.client import get_bigquery_client, get_firestore_client
 from gcp.models import Context, MPIVector
-from config import FIRESTORE_IDENTITY_POOL, MPI_VECTORS_TABLE
 
 import apache_beam as beam
 from google.cloud import firestore
@@ -13,6 +12,8 @@ import argparse
 import math
 from itertools import product
 import pandas as pd
+
+from settings import config
 
 import logging
 logger = logging.getLogger(__name__)
@@ -76,7 +77,7 @@ def create_select_mpi_query_from_context(beam_options: Context = None , tablenam
 # Generate a query to delete any MPI vectors with given List of MPIs
 def create_delete_mpis_from_mpi_list(tablename: str) -> str:
 	return f"""
-	DELETE FROM `{MPI_VECTORS_TABLE}`
+	DELETE FROM `{config.MPI_VECTORS_TABLE}`
 	WHERE mpi IN (SELECT DISTINCT mpi FROM `{tablename}`);
 	"""
 
@@ -177,13 +178,13 @@ class MPIVectorizer(beam.DoFn):
 
 	def start_bundle(self):
 		self.firestore_client = get_firestore_client()
-		self.firestore_collection = self.firestore_client.collection(FIRESTORE_IDENTITY_POOL)
+		self.firestore_collection = self.firestore_client.collection(config.FIRESTORE_IDENTITY_POOL)
 
 	def process(self, element: str):
 		if hasattr(self, 'firestore_collection'):
 			firestore_collection = self.firestore_collection
 		else:
-			firestore_collection = get_firestore_client().collection(FIRESTORE_IDENTITY_POOL)
+			firestore_collection = get_firestore_client().collection(config.FIRESTORE_IDENTITY_POOL)
 		doc = firestore_collection.document(element).get()
 		return self(doc)
 

@@ -2,8 +2,7 @@
 
 
 import pytest
-from config import BIGQUERY_TEST_TABLE
-from config import BIGQUERY_TEST_PREPROCESSED_TABLE
+from settings import config
 
 from utils.loaders import load_bigquery_table, create_generator_from_iterators
 
@@ -16,7 +15,7 @@ def generate_input():
                 # 'gender':'gender'
                 },
             'partner': 'ADHOC',
-            'tablename': BIGQUERY_TEST_PREPROCESSED_TABLE
+            'tablename': config.BIGQUERY_TEST_PREPROCESSED_TABLE
             }
 
 @pytest.fixture

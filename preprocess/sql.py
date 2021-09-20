@@ -4,7 +4,7 @@ from gcp.models import Context
 
 from copy import copy
 
-from config import DEBUG
+from settings import config
 
 import logging 
 logger = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ def compose_preprocessing_query(context: Context, template: str = template_query
 def compose_preprocessed_table_query(context: Context):
     # Add the CREATE TABLE statement if making a new table
     suffix = ''
-    if DEBUG:
+    if config.DEBUG:
         import random
         suffix = f'_DEBUG_{random.randint(1,99)}'  # Help identify debug tables created in bigquery
 

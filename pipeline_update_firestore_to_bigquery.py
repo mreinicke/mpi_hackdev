@@ -20,7 +20,7 @@ from update.firestore_to_bigquery.local_utils import (
 
 from utils.runners import send_query
 
-import config
+from settings import config
 
 import logging
 

@@ -16,7 +16,8 @@ from gcp.models import (
     NoSQLSerializer,
     Context
     )
-from config import ALLOWED_PII, BIGQUERY_TEST_TABLE, BIGQUERY_TEST_PREPROCESSED_TABLE
+
+from settings import config
 
 import logging
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 def generate_raw_ui_message() -> str:
     return json.dumps(
         {
-            "sourceTable": BIGQUERY_TEST_PREPROCESSED_TABLE,
+            "sourceTable": config.BIGQUERY_TEST_PREPROCESSED_TABLE,
             "guid": str(uuid4()),
             'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC']),
             "operation":"new",
@@ -86,7 +87,7 @@ def test_row_key_filter(example_data):
     row = example_data[0][0]
     filtered = filter_dict_for_allowed_pii(row)
     for k in filtered.keys():
-        assert k in ALLOWED_PII
+        assert k in config.ALLOWED_PII
         assert row[k] == filtered[k]
 
 

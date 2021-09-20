@@ -4,12 +4,13 @@ import pytest
 
 from gcp.models import Context
 from gcp.client import get_firestore_client
-from config import FIRESTORE_IDENTITY_POOL
 
 from update.firestore_to_bigquery.local_utils import create_context_from_string, MPIVectorizer
 from pipeline_update_firestore_to_bigquery import run_pipeline
 import argparse
 import json 
+
+from settings import config
 
 import logging 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def parser():
 @pytest.fixture
 def valid_mpis():
     client = get_firestore_client()
-    col = client.collection(FIRESTORE_IDENTITY_POOL)
+    col = client.collection(config.FIRESTORE_IDENTITY_POOL)
     docs = col.where(u'updated', u'>', 0).limit(5)
     return [d.id for d in docs.get()]
 

@@ -8,3 +8,4 @@
 !utils
 !config
 !settings.ini
+!*.env

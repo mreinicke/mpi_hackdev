@@ -9,7 +9,6 @@ from functools import wraps, partial
 import queue
 from concurrent.futures import ThreadPoolExecutor
 
-import config
 import logging
 
 # An async wrapper to add functions to event loop

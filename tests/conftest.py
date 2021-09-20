@@ -3,7 +3,10 @@
 from typing import Dict, Tuple
 import pytest
 
-from config import logger
+import settings 
+import logging
+
+logger = logging.getLogger(__name__)
 logger.info('Setting up pytest.')
 
 collect_ignore = ["test_hello.py"]

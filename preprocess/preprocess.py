@@ -2,16 +2,17 @@
 
     Convert source table into pre-processed table for indexing.
 """
+from copy import Error
 from google.cloud.exceptions import NotFound
 
 from preprocess.sql import compose_preprocessed_table_query
 from gcp.client import get_bigquery_client
 from gcp.models import Context
 
-from utils.runners import logger_wrap
-from logging import exception, getLogger
+from utils.runners import logger_wrap, send_query
+from logging import getLogger
 
-import time
+from typing import Tuple
 
 logger = getLogger(__name__)
 
@@ -22,19 +23,23 @@ def preprocess_table(context: Context):
     query, tablename = compose_preprocessed_table_query(context)
 
     logger.info(f'Sending query: {query}')
-    query_job = client.query(query)
+    err, res = send_query(query, verbose=True)
+    if err is not None:
+        raise err
+    
+    err, tablename = verify_table_created(client, tablename)
+    if err is not None:
+        raise err
 
-    logger.info(f'Created query_job {query_job.job_id}')
-    while not query_job.done():  ## TODO: this can move await and the whole function can go async
-        time.sleep(1)  ## TBD: use job.result() -> set exceptions for query failure.
+    return tablename
+    
 
+def verify_table_created(client, tablename) -> Tuple[BaseException, str]:
     try:
         client.get_table(tablename)
         logger.info('Table creation successful')
+        return None, tablename
     except NotFound:
-        logger.error('Table {tablename} not created.')
-        raise ValueError('Preprocessing failed.  Table creation query did not complete.')
-    finally:
-        logger.error('TBD: MORE EXCEPTION CATCHING. CANNOT TELL IF INITIAL QUERY IS BAD!!!!!')
-
-    return tablename
+        logger.error(f'Table {tablename} not created.')
+        return NotFound, tablename
+    

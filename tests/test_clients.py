@@ -7,14 +7,12 @@ from gcp.client import (
     get_service_account_credentials,
 )
 
-from config import GCS_BUCKET_NAME
-
 import os
-
 import pytest 
-
 import logging
 logger = logging.getLogger(__name__)
+
+from settings import config
 
 
 def test_secrets_client():
@@ -60,11 +58,11 @@ class TestGCSIO:
     def test_bucket_load(self):
         client = get_gcs_client()
         blobs = client.list_blobs(
-            GCS_BUCKET_NAME, 
+            config.GCS_BUCKET_NAME, 
             prefix='index/udrc.png')
         with open('test_file.png', 'wb+') as file_obj:
             client.download_blob_to_file(
-                f'gs://{GCS_BUCKET_NAME}/index/udrc.png',
+                f'gs://{config.GCS_BUCKET_NAME}/index/udrc.png',
                 file_obj,
                 raw_download=True,
             )
@@ -72,7 +70,7 @@ class TestGCSIO:
     def test_bucket_write(self):
         from google.cloud.storage import Blob
         client = get_gcs_client()
-        bucket = client.get_bucket(GCS_BUCKET_NAME)
+        bucket = client.get_bucket(config.GCS_BUCKET_NAME)
         blob = Blob("index/beamapp-vbrandon-0909.1000/test-file", bucket)
         fpath = os.path.join(os.getcwd(), 'tests', 'test_assets', 'test_file.txt')
         with open(fpath, 'rb') as file_obj:
