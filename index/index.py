@@ -17,37 +17,67 @@ Find candidate matches for each row where available.
 from google.cloud.firestore_v1.base_collection import BaseCollectionReference
 from gcp.client import get_firestore_client
 
-import config
+from typing import List
+
+from settings import config
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 
-class BlockIndexer():
-    
-    def __init__(self, mapped_columns: list) -> None:
+class Indexer():
+    def __init__(self, mapped_columns: List[str]) -> None:
         self.mapped_columns = mapped_columns
-        self.search_tree_ = None
-        self.search = self.assemble_search()
 
+    def assemble_search(self):
+        raise NotImplementedError('must implement method')
+
+    def index(self):
+        raise NotImplementedError('must implement method')
+
+
+
+class BlockIndexer(Indexer):
+    """
+    Block Indexer
     
+    Assembles queries to screen entire table on exact matches given blocked_index_allow 
+    flag.
+    """
+    def __init__(self, mapped_columns: List[str]) -> None:
+        super().__init__(mapped_columns)
+        self.__search_tree = None
+        self.search = self.assemble_search()
+        self.block_index_allow = [
+            'ssn', 'ssid', 'birth_date', 'ushe_student_id',
+            'usbe_student_id', 'ustc_student_id'
+        ]
+
+
     @property
     def search_tree(self):
-        if self.search_tree_ is None:
-            self.search_tree_ = get_search_tree()
-        return self.search_tree_
+        if self.__search_tree is None:
+            self.__search_tree = get_search_tree()
+        return self.__search_tree
 
 
     def assemble_search(self):
         pass
 
 
-    def index(self, row):
-        return self.search(row)
+    def index(self, tablename: str):
+        return self.search(tablename)
 
 
 
+class DemographicIndexer():
+    pass
+
+
+
+
+# Utilities to assist in loading index assets and setup
 def get_search_tree():
     pass
 
