@@ -1,6 +1,7 @@
 """firestore_to_bigquery.local_utils
 """
 
+from typing import Set
 from utils.runners import send_query
 from gcp.client import get_bigquery_client, get_firestore_client
 from gcp.models import Context, MPIVector
@@ -12,8 +13,11 @@ import argparse
 import math
 from itertools import product
 import pandas as pd
+from utils.iterators import coalesce
 
-from settings import config
+from settings import Settings
+
+config = Settings()
 
 import logging
 logger = logging.getLogger(__name__)
@@ -30,11 +34,40 @@ class CustomArgParserFactory():
 
 	def __add_argparse_args(self):
 		self.parser.add_argument(
-				'--context',
-				type=create_context_from_string,
-				help='Raw UI process instructions',
-				default='')
-
+			'--context',
+			type=create_context_from_string,
+			help='Raw UI process instructions',
+		)
+		self.parser.add_argument(
+			'--project',
+			type=str,
+			help='project name (not gcp assigned id)',
+		)
+		self.parser.add_argument(
+			'--debug',
+			type=bool,
+			default=True,
+		)
+		self.parser.add_argument(
+			'--secret',
+			type=str,
+			help='name of secret for service acount credential creation'
+		)
+		self.parser.add_argument(
+			'--vectable',
+			type=str,
+			help='fully qualified mpi vectors table name: project.dataset.tablename'
+		)
+		self.parser.add_argument(
+			'--collection',
+			type=str,
+			help='firestore identity pool collection name'
+		)
+		self.parser.add_argument(
+			'--bucket',
+			type=str,
+			help='name of bucket to store process assets and dataflow stuff'
+		)
 
 
 
@@ -60,10 +93,10 @@ class LogPipelineOptionsFn(beam.DoFn):
 
 
 # Generate a query to get distince MPIs from a table - used to limit updates to mpi_vectors table
-def create_select_mpi_query_from_context(beam_options: Context = None , tablename = None) -> str:
-	assert beam_options is not None or tablename is not None, 'Must provide either context object or tablename'
+def create_select_mpi_query_from_context(args , tablename = None) -> str:
+	assert args.context is not None or tablename is not None, 'Must provide either context object or tablename'
 	try:
-		tablename = beam_options.context.source_tablename + '_preprocessed'
+		tablename = args.context.source_tablename + '_preprocessed'
 	except Exception as e:
 		logger.warn(e)
 
@@ -74,10 +107,22 @@ def create_select_mpi_query_from_context(beam_options: Context = None , tablenam
 		`{tablename}`;
 	"""
 
+
 # Generate a query to delete any MPI vectors with given List of MPIs
-def create_delete_mpis_from_mpi_list(tablename: str) -> str:
+def create_delete_mpis_from_mpi_list(args, tablename: str = None) -> str:
+	assert args.context is not None or tablename is not None, 'Must provide either context object or tablename'
+	try:
+		tablename = args.context.source_tablename + '_preprocessed'
+	except Exception as e:
+		logger.warn(e)
+	
+	if args.vectable is None:
+		vectable = Settings().MPI_VECTORS_TABLE
+	else:
+		vectable = args.vectable
+
 	return f"""
-	DELETE FROM `{config.MPI_VECTORS_TABLE}`
+	DELETE FROM `{vectable}`
 	WHERE mpi IN (SELECT DISTINCT mpi FROM `{tablename}`);
 	"""
 
@@ -169,22 +214,26 @@ def create_mpi_vectors_from_firestore_document(mdoc:firestore.DocumentSnapshot, 
 
 
 class MPIVectorizer(beam.DoFn):
-	def __init__(self, freqfn = geomean) -> None:
+
+	def __init__(self, mpi_collection: str = None, secret: str = None, freqfn = geomean) -> None:
 		self.freqfn = freqfn
 		self.vectfn = create_mpi_vectors_from_firestore_document
+		self.secret = coalesce(secret, config.MPI_SERVICE_SECRET_NAME)
+		self.mpi_collection = coalesce(mpi_collection, config.FIRESTORE_IDENTITY_POOL)
+		super().__init__()
 
 	def __call__(self, doc: firestore.DocumentSnapshot):
 		return [MPIVector(**vect) for vect in self.vectfn(doc, self.freqfn)]
 
 	def start_bundle(self):
-		self.firestore_client = get_firestore_client()
-		self.firestore_collection = self.firestore_client.collection(config.FIRESTORE_IDENTITY_POOL)
+		self.firestore_client = get_firestore_client(secret=self.secret)
+		self.firestore_collection = self.firestore_client.collection(self.mpi_collection)
 
 	def process(self, element: str):
 		if hasattr(self, 'firestore_collection'):
 			firestore_collection = self.firestore_collection
 		else:
-			firestore_collection = get_firestore_client().collection(config.FIRESTORE_IDENTITY_POOL)
+			firestore_collection = get_firestore_client(secret=self.secret).collection(self.mpi_collection)
 		doc = firestore_collection.document(element).get()
 		return self(doc)
 
@@ -194,11 +243,14 @@ class MPIVectorizer(beam.DoFn):
 
 
 class MPIVectorTableUpdate(beam.DoFn):
-	def __init__(self) -> None:
+	
+	def __init__(self, secret: str = None) -> None:
 		super().__init__()
+		self.secret = coalesce(secret, config.MPI_SERVICE_SECRET_NAME)
+
 
 	def start_bundle(self):
-		self.bigquery_client = get_bigquery_client()
+		self.bigquery_client = get_bigquery_client(secret=self.secret)
 
 	def send_query(self, query: str, verbose=False) -> tuple:
 		return send_query(query, verbose, client=self.bigquery_client, no_results=True)

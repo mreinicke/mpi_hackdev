@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 
-class Indexer():
+class BlockIndexer():
     
     def __init__(self, mapped_columns: list) -> None:
         self.mapped_columns = mapped_columns

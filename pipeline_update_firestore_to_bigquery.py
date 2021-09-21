@@ -47,12 +47,24 @@ def run_pipeline(save_main_session=True):
     )
     beam_options.view_as(SetupOptions).save_main_session = save_main_session
 
-    # Prepare pipeline assets.
+    # Prepare pipeline assets. Check against command line arguments and environment files
+    # Datafalow runners may not have access to an up-to-date environment.  Override with
+    # arguments if provided.
     if config.DEBUG:
         tablename = config.BIGQUERY_TEST_PREPROCESSED_TABLE
     else:
         tablename = None
         raise NotImplementedError('Context tablename not implemented for this pipeline')
+
+    if args.collection is not None:
+        mpi_collection = args.collection
+    else:
+        mpi_collection = config.FIRESTORE_IDENTITY_POOL
+
+    if args.secret is not None:
+        secret = args.secret
+    else:
+        secret = config.MPI_SERVICE_SECRET_NAME
 
     # Get list of MPIs to work with.  Only MPIs under consideration need to 
     # have MPI vectors updated
@@ -68,7 +80,7 @@ def run_pipeline(save_main_session=True):
     mpi_list = [r.mpi for r in res]
 
     # Delete all mpi vectors in table where mpi in mpi_list
-    mpi_vector_delete_query = create_delete_mpis_from_mpi_list(tablename=tablename)
+    mpi_vector_delete_query = create_delete_mpis_from_mpi_list(args, tablename=tablename)
     err, res = send_query(mpi_vector_delete_query, verbose=True)
     if err is not None:
         raise err
@@ -86,8 +98,8 @@ def run_pipeline(save_main_session=True):
         _ = (
             pipeline
             | 'CreateMappedMPIPCollection' >> beam.Create(mpi_list)
-            | 'VectorizeMPIDocuments' >> beam.ParDo(MPIVectorizer())
-            | 'UpdateMPIVectorsTable' >> beam.ParDo(MPIVectorTableUpdate())
+            | 'VectorizeMPIDocuments' >> beam.ParDo(MPIVectorizer(secret=secret, mpi_collection=mpi_collection))
+            | 'UpdateMPIVectorsTable' >> beam.ParDo(MPIVectorTableUpdate(secret=secret))
         )
 
 

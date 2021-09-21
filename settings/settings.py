@@ -2,25 +2,24 @@
 
 import logging
 from pydantic import BaseSettings
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
-    DEBUG: bool
-    LOGFILE: str
-    ALLOWED_PII: List[str]
+    DEBUG: bool = True
+    LOGLEVEL: str = 'DEBUG'
+    LOGFILE: str = 'systemdat.log'
+    ALLOWED_PII: List[str] = ["first_name","last_name","ssn","ssid","middle_name","ushe_student_id","usbe_student_id","ustc_student_id","gender","ethnicity","birth_date"]
 
-    BIGQUERY_TEST_TABLE: str
-    BIGQUERY_TEST_PREPROCESSED_TABLE: str
-    BIGQUERY_LARGE: str
-    BIGQUERY_LARGE_PREPROCESSED: str
+    BIGQUERY_TEST_TABLE: str = 'ut-dws-udrc-dev.ADHOC.GRADUATES_002D66FA-300A-4018-814F-A68E07D811A1'
+    BIGQUERY_TEST_PREPROCESSED_TABLE: str = 'ut-dws-udrc-dev.ADHOC.GRADUATES_002D66FA-300A-4018-814F-A68E07D811A1_preprocessed_DEBUG_5'
 
-    GCP_PROJECT_ID: str
-    MPI_SERVICE_SECRET_NAME: str
+    GCP_PROJECT_ID: Optional[str]
+    MPI_SERVICE_SECRET_NAME: Optional[str]
 
-    MPI_VECTORS_TABLE: str
-    FIRESTORE_IDENTITY_POOL: str
-    GCS_BUCKET_NAME: str
+    MPI_VECTORS_TABLE: Optional[str ]
+    FIRESTORE_IDENTITY_POOL: Optional[str ]
+    GCS_BUCKET_NAME: Optional[str]
 
     class Config:
         env_file = '.env'
@@ -29,12 +28,6 @@ class Settings(BaseSettings):
 
 
 config = Settings()
-
-if config.DEBUG:
-    loglevel = 'DEBUG'
-else:
-    loglevel = 'INFO'
-
 
 def log_setup(loglevel, logfile):
     if loglevel == 'DEBUG':
@@ -47,6 +40,6 @@ def log_setup(loglevel, logfile):
         filename=logfile, 
         level=level)
 
-log_setup(loglevel, config.LOGFILE)
+log_setup(config.LOGLEVEL, config.LOGFILE)
 logger = logging.getLogger(__name__)
-logger.info(f"Configured logging loglevel {loglevel}")
+logger.info(f"Configured logging loglevel {config.LOGLEVEL}")
