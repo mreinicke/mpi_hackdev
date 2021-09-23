@@ -42,7 +42,7 @@ class MPIVector(BaseModel):
             return '-'.join([str(v) for v in vector])
         return None
 
-    def as_sql(self, tablename=config.MPI_VECTORS_TABLE):
+    def as_sql(self, tablename: str):
         def _value_or_null(n):
             v = getattr(self, n)
             if v is not None:

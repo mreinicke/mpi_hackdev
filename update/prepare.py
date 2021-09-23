@@ -7,6 +7,8 @@ from gcp.models import Context
 from utils.loaders import load_bigquery_table
 from utils.runners import send_query
 
+import logging
+logger = logging.getLogger(__name__)
 ##########################
 ### 1. Assign New MPIs ###
 ##########################
@@ -32,13 +34,12 @@ def update_preprocessed_table(context: Context) -> tuple:
     WHERE mpi is NULL
     """
 
-    err, _ = send_query(QUERY)
+    logger.warning('update_preprocessed_table will not fail on query failure. MPI/prob_match may not be updated. Check or force failure.')
+
+    err, _ = send_query(QUERY, verbose=True)
     return err, tablename
 
 
 ###########################################
 ### 2. Delete MPI Vectors Before Update ###
 ###########################################
-
-def delete_mpi_vectors_in_table(context: Context, tablename: str) -> tuple:
-    return NotADirectoryError, None

@@ -48,8 +48,8 @@ class TestUpdateFirestoreMethods:
         push_rows_to_firestore(rows)  ## Will pop mpi out of the dict.  cannot access mpi anymore. see above for mpis
         client = get_firestore_client()
         collection = client.collection(config.FIRESTORE_IDENTITY_POOL)
-        # for mpi in mpis:
-        #     collection.document(mpi).delete()
+        for mpi in mpis:
+            collection.document(mpi).delete()
 
 
     def test_threaded_update_handler(self, context):

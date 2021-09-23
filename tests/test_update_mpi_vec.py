@@ -1,10 +1,10 @@
 # test_update_mpi_vec.py
-
 import pytest
 
 from gcp.models import Context
-from gcp.client import get_firestore_client
+from gcp.client import get_firestore_client, get_bigquery_client
 
+from utils.runners import send_query
 from update.firestore_to_bigquery.local_utils import create_context_from_string, MPIVectorizer
 from pipeline_update_firestore_to_bigquery import run_pipeline
 import argparse
@@ -46,3 +46,8 @@ def test_mpi_vectorizer(valid_mpis):
 
 def test_pipeline():
     run_pipeline()
+    # Delete all mpi vectors in table where mpi in mpi_list
+    mpi_vector_delete_query = f"DELETE FROM `{config.MPI_VECTORS_TABLE}` WHERE 1=1"
+    err, _ = send_query(mpi_vector_delete_query, verbose=True)
+    if err is not None:
+        raise err

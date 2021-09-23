@@ -5,7 +5,6 @@ An apache beam pipeline to update MPI vectors table from firestore
 given context.
 """
 
-from update.prepare import delete_mpi_vectors_in_table
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
@@ -19,6 +18,7 @@ from update.firestore_to_bigquery.local_utils import (
 )
 
 from utils.runners import send_query
+from gcp.client import get_bigquery_client
 
 from settings import config
 
@@ -61,6 +61,11 @@ def run_pipeline(save_main_session=True):
     else:
         mpi_collection = config.FIRESTORE_IDENTITY_POOL
 
+    if args.vectable is not None:
+        mpi_vectors_table = args.vectable
+    else:
+        mpi_vectors_table = config.MPI_VECTORS_TABLE
+
     if args.secret is not None:
         secret = args.secret
     else:
@@ -72,8 +77,11 @@ def run_pipeline(save_main_session=True):
     # re-implement streaming from table, chunking, bundling, etc. with given client.  This implementation
     # cannot handle large tables as it will attempt to put a list of all affected MPIs into memory 
     # (ok for a couple thousand, not a couple million)
+
+    bigquery_client = get_bigquery_client(secret=secret)
+
     mpi_query = create_select_mpi_query_from_context(args, tablename=tablename)
-    err, res = send_query(mpi_query, verbose=True)
+    err, res = send_query(mpi_query, verbose=True, client=bigquery_client)
     if err is not None:
         raise err
 
@@ -81,7 +89,7 @@ def run_pipeline(save_main_session=True):
 
     # Delete all mpi vectors in table where mpi in mpi_list
     mpi_vector_delete_query = create_delete_mpis_from_mpi_list(args, tablename=tablename)
-    err, res = send_query(mpi_vector_delete_query, verbose=True)
+    err, res = send_query(mpi_vector_delete_query, verbose=True, client=bigquery_client)
     if err is not None:
         raise err
 
@@ -99,7 +107,7 @@ def run_pipeline(save_main_session=True):
             pipeline
             | 'CreateMappedMPIPCollection' >> beam.Create(mpi_list)
             | 'VectorizeMPIDocuments' >> beam.ParDo(MPIVectorizer(secret=secret, mpi_collection=mpi_collection))
-            | 'UpdateMPIVectorsTable' >> beam.ParDo(MPIVectorTableUpdate(secret=secret))
+            | 'UpdateMPIVectorsTable' >> beam.ParDo(MPIVectorTableUpdate(secret=secret, mpi_vectors_table=mpi_vectors_table))
         )
 
 

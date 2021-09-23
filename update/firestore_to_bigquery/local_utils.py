@@ -215,11 +215,11 @@ def create_mpi_vectors_from_firestore_document(mdoc:firestore.DocumentSnapshot, 
 
 class MPIVectorizer(beam.DoFn):
 
-	def __init__(self, mpi_collection: str = None, secret: str = None, freqfn = geomean) -> None:
+	def __init__(self, mpi_collection: str = config.FIRESTORE_IDENTITY_POOL, secret: str = config.MPI_SERVICE_SECRET_NAME, freqfn = geomean) -> None:
 		self.freqfn = freqfn
 		self.vectfn = create_mpi_vectors_from_firestore_document
-		self.secret = coalesce(secret, config.MPI_SERVICE_SECRET_NAME)
-		self.mpi_collection = coalesce(mpi_collection, config.FIRESTORE_IDENTITY_POOL)
+		self.secret = secret
+		self.mpi_collection = mpi_collection
 		super().__init__()
 
 	def __call__(self, doc: firestore.DocumentSnapshot):
@@ -244,10 +244,10 @@ class MPIVectorizer(beam.DoFn):
 
 class MPIVectorTableUpdate(beam.DoFn):
 	
-	def __init__(self, secret: str = None) -> None:
+	def __init__(self, secret: str = config.MPI_SERVICE_SECRET_NAME, mpi_vectors_table: str = config.MPI_VECTORS_TABLE) -> None:
 		super().__init__()
-		self.secret = coalesce(secret, config.MPI_SERVICE_SECRET_NAME)
-
+		self.secret = secret
+		self.mpi_vectors_table = mpi_vectors_table
 
 	def start_bundle(self):
 		self.bigquery_client = get_bigquery_client(secret=self.secret)
@@ -256,8 +256,8 @@ class MPIVectorTableUpdate(beam.DoFn):
 		return send_query(query, verbose, client=self.bigquery_client, no_results=True)
 
 	def process(self, element: MPIVector):
-		insert_query = element.as_sql()
-		err, _ = self.send_query(insert_query, verbose = False)
+		insert_query = element.as_sql(tablename=self.mpi_vectors_table)
+		err, _ = self.send_query(insert_query, verbose = True)
 
 	def finish_bundle(self):
 		self.bigquery_client.close()

@@ -98,14 +98,9 @@ def compose_preprocessing_query(context: Context, template: str = template_query
 
 def compose_preprocessed_table_query(context: Context):
     # Add the CREATE TABLE statement if making a new table
-    suffix = ''
-    if config.DEBUG:
-        import random
-        suffix = f'_DEBUG_{random.randint(1,99)}'  # Help identify debug tables created in bigquery
-
     tablename = context.source_tablename
 
-    output_table_name = f"{tablename.strip('`')}_preprocessed{suffix}"
+    output_table_name = f"{tablename.strip('`')}_preprocessed"
     query = f"CREATE TABLE `{output_table_name}` AS "\
             + compose_preprocessing_query(context)
     return query, output_table_name

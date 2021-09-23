@@ -127,6 +127,7 @@ REQUIRED_PACKAGES = [
     'pydot',
     'requests',
     'pydantic[dotenv]',
+    'scikit-learn',
 ]
 
 setuptools.setup(
