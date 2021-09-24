@@ -17,11 +17,14 @@ class Settings(BaseSettings):
     GCP_PROJECT_ID: Optional[str]
     MPI_SERVICE_SECRET_NAME: Optional[str]
 
-    MPI_VECTORS_TABLE: Optional[str ]
-    FIRESTORE_IDENTITY_POOL: Optional[str ]
+    MPI_VECTORS_TABLE: Optional[str]
+    INDEX_TREE_REF_TABLE: Optional[str]
+    FIRESTORE_IDENTITY_POOL: Optional[str]
     GCS_BUCKET_NAME: Optional[str]
 
+    BLOCKED_COLUMNS: Optional[List[str]] = ['ssn', 'ssid', "ushe_student_id","usbe_student_id","ustc_student_id"]
     INDEX_NAME_NEIGHBOR_THRESHOLD: Optional[float] = 0.2
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

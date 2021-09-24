@@ -1,10 +1,13 @@
 # runners.py
 
 import time
+
+from google.cloud import bigquery
 from gcp.client import get_bigquery_client
 
 import asyncio 
 from functools import wraps, partial
+from typing import Generator, Tuple
 
 import queue
 from concurrent.futures import ThreadPoolExecutor
@@ -36,7 +39,7 @@ def logger_wrap(func):
 
 
 # Run BigqueryQuery - Blocks until complete
-def send_query(query: str, verbose=False, client=None, no_results=False) -> tuple:
+def send_query(query: str, verbose=False, client=None, no_results=False) -> Tuple[Exception, Generator]:
     llog = logging.getLogger(__name__)
 
     err = None
