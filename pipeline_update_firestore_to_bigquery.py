@@ -9,8 +9,6 @@ import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from update.firestore_to_bigquery.local_utils import (
-    CustomArgParserFactory,
-    LogPipelineOptionsFn,
     create_select_mpi_query_from_context,
     create_delete_mpis_from_mpi_list,
     MPIVectorizer,
@@ -18,6 +16,7 @@ from update.firestore_to_bigquery.local_utils import (
 )
 
 from utils.runners import send_query
+from utils.pipeline_utils import CustomArgParserFactory, LogPipelineOptionsFn
 from gcp.client import get_bigquery_client
 
 from settings import config
@@ -98,11 +97,16 @@ def run_pipeline(save_main_session=True):
         # Add a branch for logging the ValueProvider value.
         _ = (
             pipeline
-            | beam.Create([None])
-            | 'LogBeamArgs' >> beam.ParDo(LogPipelineOptionsFn(
-                options=beam_options, message='Beam Arguments', options_type='pipeline'))
+            | 'Empty-pipeline-args' >> beam.Create([None])
             | 'LogOtherArgs' >> beam.ParDo(LogPipelineOptionsFn(
                 options=args, message='Other Arguments', options_type='other'))
+        )
+
+        _ = (
+            pipeline
+            | 'Empty-other-args' >> beam.Create([None])
+            | 'LogBeamArgs' >> beam.ParDo(LogPipelineOptionsFn(
+                options=beam_options, message='Beam Arguments', options_type='pipeline'))
         )
 
         _ = (

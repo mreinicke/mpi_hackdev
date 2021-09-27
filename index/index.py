@@ -123,8 +123,12 @@ class BlockIndexer(Indexer):
 class NameIndexer(Indexer):
 
     def __init__(
-        self, mapped_columns: List[str], mpi_vectors_table=None, 
-        preprocessed_table=None, secret=None, bucketname=config.GCS_BUCKET_NAME,
+        self, 
+        mapped_columns: List[str], 
+        mpi_vectors_table=None,
+        preprocessed_table=None,
+        secret=None,
+        bucketname=config.GCS_BUCKET_NAME,
         search_tree_filename="index/search_tree.pkl",
         search_tree_ref_table=config.INDEX_TREE_REF_TABLE,
         ) -> None:
@@ -194,7 +198,7 @@ class NameIndexer(Indexer):
             )
             assert len(vectors) == len(rows), \
                 f'mismatch between num vectors {len(vectors)} and num rows{len(rows)}'
-            row_mpis = search_for_neighbor_mpis(
+            return search_for_neighbor_mpis(
                 vectors=vectors, 
                 tree=self.tree, 
                 ref_table=self.tree_ref_table,

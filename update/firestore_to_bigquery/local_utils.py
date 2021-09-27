@@ -4,12 +4,11 @@
 from typing import Set
 from utils.runners import send_query
 from gcp.client import get_bigquery_client, get_firestore_client
-from gcp.models import Context, MPIVector
+from gcp.models import MPIVector
 
 import apache_beam as beam
 from google.cloud import firestore
 
-import argparse
 import math
 from itertools import product
 import pandas as pd
@@ -21,83 +20,6 @@ config = Settings()
 
 import logging
 logger = logging.getLogger(__name__)
-
-# Control Classes - Handle argument parsing and pipeline setup
-class CustomArgParserFactory():
-	def __init__(self, **kwargs):
-		self.kwargs = kwargs
-		self.parser = argparse.ArgumentParser()
-	
-	def __call__(self) -> argparse.ArgumentParser:
-		self.__add_argparse_args()
-		return self.parser
-
-	def __add_argparse_args(self):
-		self.parser.add_argument(
-			'--context',
-			type=create_context_from_string,
-			help='Raw UI process instructions',
-		)
-		self.parser.add_argument(
-			'--project',
-			type=str,
-			help='project name (not gcp assigned id)',
-		)
-		self.parser.add_argument(
-			'--debug',
-			type=bool,
-			default=True,
-		)
-		self.parser.add_argument(
-			'--secret',
-			type=str,
-			help='name of secret for service acount credential creation'
-		)
-		self.parser.add_argument(
-			'--vectable',
-			type=str,
-			help='fully qualified mpi vectors table name: project.dataset.tablename'
-		)
-		self.parser.add_argument(
-			'--collection',
-			type=str,
-			help='firestore identity pool collection name'
-		)
-		self.parser.add_argument(
-			'--bucket',
-			type=str,
-			help='name of bucket to store process assets and dataflow stuff'
-		)
-
-
-
-# Parse raw data from UI (stored in CloudSQL) into Context object
-def create_context_from_string(m: str) -> Context:
-	return Context(raw=m)
-
-
-
-# Log options when pipeline is created
-class LogPipelineOptionsFn(beam.DoFn):
-	def __init__(self, options, message: str = None, options_type: str = None):
-		self.options = options
-		self.message = message
-		self.options_type = options_type
-		assert self.options_type in ['pipeline', 'other'], \
-			'must declare options_type=pipeline or other'
-
-	def process(self, *args, **kwargs):
-		logger.info(self.message)
-		if self.options_type == 'pipeline':
-			try:
-				logger.info('PipelineOptions Handler yields:  %s' % self.options.get_all_options())
-			except Exception as e:
-				logger.error(f'could not display pipeline options: {e}')
-		elif self.options_type == 'other':
-			try:
-				logger.info(f'{self.options}')
-			except Exception as e:
-				logger.errot(f'could not display other arguments {e}')
 
 
 
@@ -243,6 +165,7 @@ class MPIVectorizer(beam.DoFn):
 			firestore_collection = self.firestore_collection
 		else:
 			firestore_collection = get_firestore_client(secret=self.secret).collection(self.mpi_collection)
+			
 		doc = firestore_collection.document(element).get()
 		return self(doc)
 

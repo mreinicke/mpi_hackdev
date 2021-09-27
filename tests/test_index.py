@@ -13,6 +13,7 @@ from utils.embeds import AlphabetVectorizer
 
 from index.index import (
     BlockIndexer,
+    NameIndexer,
 )
 
 from index.search.search_tree import (
@@ -131,4 +132,18 @@ class TestTreeConstructionUsage:
         )
         assert len(row_mpis) >= len(rows)
 
+    
+    def test_nameindexer():
+        idxr = NameIndexer(
+            mapped_columns=['first_name', 'last_name'],
+        )
+
+        query = f"SELECT * FROM `{config.BIGQUERY_TEST_PREPROCESSED_TABLE}`"
+        _, res = send_query(query)
+        rows = [r for r in res]
+
+        indexes = idxr.index(rows)
+        logger.info(indexes)
+
+        assert len(indexes) >= len(rows)
         
