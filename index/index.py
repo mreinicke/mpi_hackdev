@@ -140,7 +140,6 @@ class NameIndexer(Indexer):
         self.__clf = None
 
 
-
     @property
     def need_run(self):
         if ('first_name' in self.mapped_columns) and ('last_name' in self.mapped_columns):

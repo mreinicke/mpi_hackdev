@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     GCS_BUCKET_NAME: Optional[str]
 
     BLOCKED_COLUMNS: Optional[List[str]] = ['ssn', 'ssid', "ushe_student_id","usbe_student_id","ustc_student_id"]
-    INDEX_NAME_NEIGHBOR_THRESHOLD: Optional[float] = 0.2
+    INDEX_NAME_NEIGHBOR_THRESHOLD: Optional[float] = 0.1
 
     class Config:
         env_file = '.env'

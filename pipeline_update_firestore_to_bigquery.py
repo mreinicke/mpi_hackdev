@@ -99,8 +99,10 @@ def run_pipeline(save_main_session=True):
         _ = (
             pipeline
             | beam.Create([None])
-            | 'LogBeamArgs' >> beam.ParDo(LogPipelineOptionsFn(beam_options, message='Beam Arguments'))
-            | 'LogOtherArgs' >> beam.ParDo(LogPipelineOptionsFn(args, message='Other Arguments'))
+            | 'LogBeamArgs' >> beam.ParDo(LogPipelineOptionsFn(
+                options=beam_options, message='Beam Arguments', options_type='pipeline'))
+            | 'LogOtherArgs' >> beam.ParDo(LogPipelineOptionsFn(
+                options=args, message='Other Arguments', options_type='other'))
         )
 
         _ = (

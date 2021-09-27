@@ -152,39 +152,29 @@ def load_unpickle_tree(
 ### Search and Index MPIs ###
 #############################
 
+
 def search_for_neighbor_mpis(
     vectors: np.ndarray, 
-    tree, ref_table: str, 
+    tree, 
+    ref_table: str, 
     query_radius=config.INDEX_NAME_NEIGHBOR_THRESHOLD,
     bigquery_client=None) -> np.ndarray:
     
-    def _query_ref_table(indices: list) -> list:
-        # Note the +1 on tree index to bigquery index.  the bigquery index starts at 1
-        # due to it's being created with ROW_NUMBER().
-        query = f"""
-        SELECT
-            mpi
-        FROM
-            `{ref_table}`
-        WHERE
-            index IN ({','.join([str(i+1) for i in indices])})
-        """
-        err, res = send_query(query=query, client=bigquery_client)
-        assert err is None, err
-        return [r['mpi'] for r in res]
-    
-    query_indices_from_reference_table(vectors)
-    rows = vectors[:, 0]
+    rownums = vectors[:, 0]
     emb = [x for x in vectors[:, 1]]
     ind = tree.query_radius(emb, r=query_radius)
-    logger.info(ind)
-    mpis = [_query_ref_table(i) for i in ind]
-    return tuple(zip(rows, mpis))
+    return query_indices_from_reference_table(
+        row_indices=zip(rownums, ind), 
+        ref_table=ref_table, 
+        bigquery_client=bigquery_client)
+
     
 
-def query_indices_from_reference_table(row_indices: np.ndarray, ref_table: str) -> list:
+def query_indices_from_reference_table(row_indices: np.ndarray, ref_table: str, bigquery_client: bigquery.Client) -> list:
     
     def _build_query_for_row(row_index: tuple) -> str:
+        # Note the +1 on tree index to bigquery index.  the bigquery index starts at 1
+        # due to it's being created with ROW_NUMBER().
         return f"""
         (
         SELECT 
@@ -197,15 +187,17 @@ def query_indices_from_reference_table(row_indices: np.ndarray, ref_table: str) 
         )
         """
 
-    def _build_queries_from_row_indices() -> str:
+    def _build_query_from_row_indices() -> str:
         SELECT = """
         SELECT 
             rownum, mpi 
         FROM 
 
         """
-        UNIONS = " UNION ".join([_build_queries_from_row_indices(ri) for ri in row_indices])
+        UNIONS = " UNION DISTINCT ".join([_build_query_for_row(ri) for ri in row_indices])
         return SELECT + UNIONS
 
-    logger.info(_build_queries_from_row_indices())
-    
+    query = _build_query_from_row_indices()
+    err, res = send_query(query=query, client=bigquery_client)
+    assert err is None, err
+    return [tuple([r['rownum'], r['mpi']]) for r in res]
