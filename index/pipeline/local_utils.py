@@ -43,8 +43,29 @@ class NameMatchIndexFn(beam.DoFn):
 
 
 	def _flush(self):
-		print(self.batch)
+		res = self.indexer.index(self.batch)
+		query = self._assemble_insert_query(res)
+		err, res = send_query(query=query, client=self.bigquery_client)
+		assert err is None, err
 		self.batch = []
+
+
+	def _assemble_insert_query(self, res: tuple) -> str:
+		
+		def _replace_res_elements(r: Tuple[int, str], template: str) -> str:
+			return template\
+					.replace('<rownum>', str(r[0]))\
+					.replace('<mpi>', r[1])
+		
+		INSERT = f"""
+		INSERT INTO `{self.tablename}_index` (rownum, mpi)
+		VALUES 
+		"""
+		subquery = """
+		(<rownum>, '<mpi>')
+		"""
+		SUBQUERIES = ','.join([_replace_res_elements(r, subquery) for r in res])
+		return INSERT + SUBQUERIES
 
 
 	def start_bundle(self):
@@ -55,7 +76,6 @@ class NameMatchIndexFn(beam.DoFn):
 			secret=self.secret,
 			bucket=self.bucket,
 		)
-		self._flush()
 
 
 	def process(self, element: Tuple[str, str, int]):

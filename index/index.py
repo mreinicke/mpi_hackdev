@@ -13,6 +13,7 @@
         2. name_index -> temp_table
 
 """
+from attr import has
 from google.cloud.firestore_v1.base_collection import BaseCollectionReference
 from google.protobuf.message import Error
 from gcp.client import get_bigquery_client, get_firestore_client, get_gcs_client
@@ -20,6 +21,7 @@ from utils.iterators import coalesce
 from utils.runners import send_query
 from utils.embeds import AlphabetVectorizer
 
+from collections import namedtuple
 from typing import List, Tuple
 import numpy as np
 
@@ -33,11 +35,16 @@ logger = logging.getLogger(__name__)
 
 
 class Indexer():
-    def __init__(self, mapped_columns: List[str], mpi_vectors_table=None, preprocessed_table = None, secret=None) -> None:
+    def __init__(self, mapped_columns: List[str], mpi_vectors_table=None, preprocessed_table = None, secret=None, **kwargs) -> None:
         self.mapped_columns = mapped_columns
         self.secret = coalesce(secret, config.MPI_SERVICE_SECRET_NAME)
         self.mpi_vectors_table = coalesce(mpi_vectors_table, config.MPI_VECTORS_TABLE)
         self.preprocessed_table = coalesce(preprocessed_table, config.BIGQUERY_TEST_PREPROCESSED_TABLE)
+        for kwarg in kwargs:
+            if hasattr(self, kwarg):
+                self.kwarg = kwargs[kwarg]
+            else:
+                setattr(self, kwarg, kwargs[kwarg])
 
         assert self.secret is not None, 'Must provide secret'
         assert self.mpi_vectors_table is not None, 'Must provide mpi_vectors_table'
@@ -183,12 +190,14 @@ class NameIndexer(Indexer):
         Returns:
             np.ndarray: [description]
         """
+        RowVector = namedtuple('RowVector', ['rownum', 'vector'])
+
         def _concat_first_last_name(row) -> Tuple[int, str]:
-            return np.array(
-                (row['rownum'], row['first_name'] + row['last_name'])
-            )
+            concat_name = row.first_name + row.last_name
+            return RowVector._make([row.rownum, concat_name])
+
         def _vectorize_concat_name(row_val: tuple, vectorizer: AlphabetVectorizer) -> Tuple[int, np.ndarray]:
-            return (row_val[0], vectorizer(row_val[1]))
+            return np.array([row_val.rownum, vectorizer(row_val.vector)], dtype=object)
 
         if self.need_run:
             self.assemble_search()
@@ -199,6 +208,7 @@ class NameIndexer(Indexer):
                         ) for row in rows
                 ]
             )
+
             assert len(vectors) == len(rows), \
                 f'mismatch between num vectors {len(vectors)} and num rows{len(rows)}'
             indexes = search_for_neighbor_mpis(

@@ -129,13 +129,13 @@ def pickle_save_tree(
 
 def load_unpickle_tree(
     gcs_client: storage.Client, 
-    bucketname: str = config.GCS_BUCKET_NAME,
+    bucket: str = config.GCS_BUCKET_NAME,
     filename: str = "index/search_tree.pkl") -> Tuple[Exception, object]:
     logger.info('loading search tree')
     tp = tempfile.TemporaryFile()
     try:
         gcs_client.download_blob_to_file(
-            f'gs://{bucketname}/{filename}',
+            f'gs://{bucket}/{filename}',
             tp,
             raw_download=True,
         )
