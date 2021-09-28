@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 
-def generate_raw_ui_message() -> str:
+def generate_raw_ui_message(tablename: str = config.BIGQUERY_TEST_TABLE) -> str:
     return json.dumps(
         {
-            "sourceTable": config.BIGQUERY_TEST_TABLE,
+            "sourceTable": tablename,
             # "sourceTable": BIGQUERY_LARGE,
             "guid": str(uuid4()),
             'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC']),

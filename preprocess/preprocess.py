@@ -3,6 +3,7 @@
     Convert source table into pre-processed table for indexing.
 """
 from copy import Error
+from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
 from preprocess.sql import compose_preprocessed_table_query
@@ -18,8 +19,10 @@ logger = getLogger(__name__)
 
 
 @logger_wrap
-def preprocess_table(context: Context):
-    client = get_bigquery_client()
+def preprocess_table(context: Context, client: None = bigquery.Client):
+    if client is None:
+        client = get_bigquery_client()
+
     query, tablename = compose_preprocessed_table_query(context)
 
     logger.info(f'Sending query: {query}')
