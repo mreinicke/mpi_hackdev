@@ -14,6 +14,7 @@
 
 """
 from google.cloud.firestore_v1.base_collection import BaseCollectionReference
+from google.protobuf.message import Error
 from gcp.client import get_bigquery_client, get_firestore_client, get_gcs_client
 from utils.iterators import coalesce
 from utils.runners import send_query
@@ -59,12 +60,12 @@ class BlockIndexer(Indexer):
     """
     def __init__(
         self,
-        client,
         mapped_columns: List[str], 
         blocked_columns=config.BLOCKED_COLUMNS,
+        secret=None,
         **kwargs) -> None:
 
-        super().__init__(mapped_columns, **kwargs)
+        super().__init__(mapped_columns=mapped_columns, secret=secret, **kwargs)
         self.block_index_allow = blocked_columns
         self.template_column_query = """
         SELECT
@@ -75,7 +76,7 @@ class BlockIndexer(Indexer):
             INNER JOIN `<mpi_vectors_table>` mt
                 ON CAST(pt.<column_name> AS STRING) = CAST(mt.<column_name> AS STRING)
         """
-        self.client = client
+        self.bigquery_client = get_bigquery_client(secret=secret)
 
 
     @property
@@ -112,11 +113,12 @@ class BlockIndexer(Indexer):
 
     def run_index(self):
         query = self.assemble_search()
-        return send_query(query=query, verbose=True, client=self.client)
+        return send_query(query=query, verbose=True, client=self.bigquery_client)
 
     def index(self):
         if self.need_run:
             return self.run_index()
+        return ValueError('blocked indexing not indicated by mapped columns'), None
 
 
 
@@ -128,7 +130,7 @@ class NameIndexer(Indexer):
         mpi_vectors_table=None,
         preprocessed_table=None,
         secret=None,
-        bucketname=config.GCS_BUCKET_NAME,
+        bucket=config.GCS_BUCKET_NAME,
         search_tree_filename="index/search_tree.pkl",
         search_tree_ref_table=config.INDEX_TREE_REF_TABLE,
         ) -> None:
@@ -137,7 +139,7 @@ class NameIndexer(Indexer):
             mapped_columns, mpi_vectors_table=mpi_vectors_table, 
             preprocessed_table=preprocessed_table, secret=secret)
 
-        self.bucketname = bucketname
+        self.bucket = bucket
         self.search_tree_filename = search_tree_filename
         self.search_tree_ref_table = search_tree_ref_table
         self.bigquery_client = get_bigquery_client(secret=secret)
@@ -159,11 +161,12 @@ class NameIndexer(Indexer):
 
 
     def assemble_search(self):
-        self.tree = load_unpickle_tree(
+        err, self.tree = load_unpickle_tree(
             gcs_client=get_gcs_client(secret=self.secret),
-            bucketname=self.bucketname,
+            bucket=self.bucket,
             filename=self.search_tree_filename,
         )
+        assert err is None, err
 
 
     def index(self, rows: list) -> np.ndarray:
@@ -198,12 +201,13 @@ class NameIndexer(Indexer):
             )
             assert len(vectors) == len(rows), \
                 f'mismatch between num vectors {len(vectors)} and num rows{len(rows)}'
-            return search_for_neighbor_mpis(
+            indexes = search_for_neighbor_mpis(
                 vectors=vectors, 
                 tree=self.tree, 
-                ref_table=self.tree_ref_table,
+                ref_table=self.search_tree_ref_table,
                 bigquery_client=self.bigquery_client
             )
+            return indexes
 
 
 

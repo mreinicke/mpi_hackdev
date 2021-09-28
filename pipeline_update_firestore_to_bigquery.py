@@ -8,7 +8,7 @@ given context.
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
-from update.firestore_to_bigquery.local_utils import (
+from update.pipeline.local_utils import (
     create_select_mpi_query_from_context,
     create_delete_mpis_from_mpi_list,
     MPIVectorizer,

@@ -133,7 +133,7 @@ class TestTreeConstructionUsage:
         assert len(row_mpis) >= len(rows)
 
     
-    def test_nameindexer():
+    def test_nameindexer(self):
         idxr = NameIndexer(
             mapped_columns=['first_name', 'last_name'],
         )
