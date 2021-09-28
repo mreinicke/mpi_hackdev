@@ -12,3 +12,20 @@ Windows CLI
 ```bash
  python -m pipeline_update_firestore_to_bigquery --runner DataflowRunner --region us-central1 --network udrc-app-network --subnetwork regions/us-central1/subnetworks/central-subnet --setup_file C:\Users\vbrandon\Desktop\H_sync\bin\mpi_hackdev\setup.py --project ut-dws-udrc-dev --secret projects/319293654677/secrets/mpi-sa-key/versions/latest --bucket mpi-dev-bucket --collection “hackathon_pool” --vectable ut-dws-udrc-dev.MPI.mpi_vectors
 ```
+
+
+## Building a GCR Image via gcloud
+[ref](https://cloud.google.com/sdk/gcloud/reference/builds/submit)
+```powershell
+# Powershell
+Set-Variable -Name "PROJECT" -Value "ut-dws-udrc-dev"
+Set-Variable -Name "PIPELINE" -Value "InsertPipelineNameHere"
+Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/preprocess_table:latest"
+gcloud builds submit --tag $TEMPLATE_IMAGE ./deployment/$PIPELINE/
+```
+
+``bash
+EXPORT
+EXPORT
+...
+```
