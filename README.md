@@ -19,9 +19,10 @@ Windows CLI
 ```powershell
 # Powershell
 Set-Variable -Name "PROJECT" -Value "ut-dws-udrc-dev"
-Set-Variable -Name "PIPELINE" -Value "InsertPipelineNameHere"
+Set-Variable -Name "CONFIGFILE" -Value "pipeline_config_filename.yaml"
+Set-Variable -Name "GCSLOGDIR" -VALUE "gs://mpi-dev-bucket/logging"
 Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/preprocess_table:latest"
-gcloud builds submit --tag $TEMPLATE_IMAGE ./deployment/$PIPELINE/
+gcloud builds submit --gcs-log-dir $GCSLOGDIR --config $CONFIGFILE .
 ```
 
 ``bash
