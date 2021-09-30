@@ -2,6 +2,6 @@ steps:
 # Build the container image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/${PROJECT_ID}/pipeline_preprocess_preprocess_table', 'deployment/pipeline_preprocess_preprocess_table/']
-# Push the image to Container Registry
+  # Push the image to Container Registry
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/${PROJECT_ID}/pipeline_preprocess_preprocess_table']

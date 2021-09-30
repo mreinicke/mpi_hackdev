@@ -2,7 +2,6 @@
 
     Convert source table into pre-processed table for indexing.
 """
-from copy import Error
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 

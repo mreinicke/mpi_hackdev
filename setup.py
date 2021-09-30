@@ -131,7 +131,7 @@ REQUIRED_PACKAGES = [
 ]
 
 setuptools.setup(
-    name='mpi_hackdef',
+    name='mpi',
     author='Vincent Brandon',
     author_email='vbrandon@utah.gov',
     url='https://github.com/frellnick/mpi_hackdev',
