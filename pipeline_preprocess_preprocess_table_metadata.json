@@ -1,0 +1,16 @@
+{
+    "name": "Preprocess table Python flex template",
+    "description": "Preprocess table flex template.",
+    "parameters": [
+      {
+        "name": "context",
+        "label": "UI Mapping Context",
+        "helpText": "Mapping information from UI.  Includes tablename, field details."
+      },
+      {
+          "name": "secret",
+          "label": "Credential Secret Name.",
+          "helpText": "Name of GCP Secret that must be accessed to gain application credentials for various clients."
+      }
+    ]
+}

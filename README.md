@@ -19,14 +19,19 @@ Windows CLI
 ```powershell
 # Powershell
 Set-Variable -Name "PROJECT" -Value "ut-dws-udrc-dev"
-Set-Variable -Name "CONFIGFILE" -Value "pipeline_config_filename.yaml"
 Set-Variable -Name "GCSLOGDIR" -VALUE "gs://mpi-dev-bucket/logging"
 Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/preprocess_table:latest"
-gcloud builds submit --gcs-log-dir $GCSLOGDIR --config $CONFIGFILE .
+gcloud builds submit --gcs-log-dir $GCSLOGDIR --tag $TEMPLATE_IMAGE .
 ```
 
-``bash
-EXPORT
-EXPORT
-...
+
+## Building a Flex Template via gcloud
+```powershell
+Set-Variable -Name "TEMPLATE_PATH" -Value "gs://mpi-dev-bucket/dataflow/templates/<pipeline_name>.json"
+gcloud dataflow flex-template build $TEMPLATE_PATH --image "$TEMPLATE_IMAGE" --sdk-language "PYTHON" --metadata-file "<insert_name_of_metdatada_file>.json"
+```
+
+## Run Flex Template
+```powershell
+Set-Variable -Name "REGION" -Value "us-central1"
 ```
