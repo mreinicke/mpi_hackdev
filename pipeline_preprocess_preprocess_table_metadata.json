@@ -3,6 +3,11 @@
     "description": "Preprocess table flex template.",
     "parameters": [
       {
+        "name": "project",
+        "label": "GCP Project Name",
+        "helpText": "GCP Project Name for dataflow pipeline and assets (not project id number)"
+      },
+      {
         "name": "context",
         "label": "UI Mapping Context",
         "helpText": "Mapping information from UI.  Includes tablename, field details."
@@ -11,6 +16,11 @@
           "name": "secret",
           "label": "Credential Secret Name.",
           "helpText": "Name of GCP Secret that must be accessed to gain application credentials for various clients."
+      },
+      {
+        "name": "bucket",
+        "label": "GCS Bucket Name.",
+        "helpText":"Bucket common name for pipeline assets, logs, etc. (not fully qualified path)"
       }
     ]
 }

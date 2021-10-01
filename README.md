@@ -15,6 +15,8 @@ Windows CLI
 
 
 ## Building a GCR Image via gcloud
+.env files are git ignored.  They may not be available in the container once constructed unless the .gitignore is changed or the file is injected somehow.  Config may be more reliant on secrets (having to generate a secrets fetching client prior runtime) or other solution.
+
 [ref](https://cloud.google.com/sdk/gcloud/reference/builds/submit)
 ```powershell
 # Powershell
@@ -27,11 +29,18 @@ gcloud builds submit --gcs-log-dir $GCSLOGDIR --tag $TEMPLATE_IMAGE .
 
 ## Building a Flex Template via gcloud
 ```powershell
-Set-Variable -Name "TEMPLATE_PATH" -Value "gs://mpi-dev-bucket/dataflow/templates/<pipeline_name>.json"
-gcloud dataflow flex-template build $TEMPLATE_PATH --image "$TEMPLATE_IMAGE" --sdk-language "PYTHON" --metadata-file "<insert_name_of_metdatada_file>.json"
+Set-Variable -Name "REGION" -Value ""
+Set-Variable -Name "NETWORK" -Value ""
+Set-Variable -Name "SUBNETWORK" -Value ""
+Set-Variable -Name "BUCKET" -Value ""
+Set-Variable -Name "SERVICE_ACCOUNT_EMAIL" -Value ""
+Set-Variable -Name "TEMPLATE_PATH" -Value "gs://$BUCKET/dataflow/templates/<pipeline_name>.json"
+Set-Variable -Name "METADATA_FILE" -Value "<metadata_file>.json"
+gcloud dataflow flex-template build $TEMPLATE_PATH --image "$TEMPLATE_IMAGE" --sdk-language "PYTHON" --metadata-file $METADATA_FILE --network $NETWORK --subnetwork $SUBNETWORK --project $PROJECT --worker-region $REGION --service-account-email $SERVICE_ACCOUNT_EMAIL
 ```
 
 ## Run Flex Template
 ```powershell
-Set-Variable -Name "REGION" -Value "us-central1"
+
+gcloud dataflow flex-template run "<pipeline-name>-`date +%Y%m%d-%H%M%S` " --template-file-gcs-location $TEMPLATE_PATH --parameters <parameter_name>=<parameter_value>...repeat_for_ea --region "$REGION" --project ut-dws-udrc-dev --setup-file setup.py
 ```
