@@ -2,6 +2,7 @@
 
 from comparison.comparison import Comparator
 from comparison.sql import build_select_distinct_ind, build_join_preprocessed
+from utils.runners import send_query
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,5 +21,13 @@ def test_build_join_preprocessed():
 def test_comparator_assemble():
     c = Comparator(mapped_columns=['first_name', 'ssn'])
     q = c.assemble_comparison()
-    logger.debug(q)
     assert len(q) > 0
+
+
+def test_comparator_query_function():
+    c = Comparator(mapped_columns=['first_name', 'ssn'])
+    q = c.assemble_comparison()
+    err, res = send_query(q, verbose=True)
+    assert err is None, err
+    for r in res:
+        logger.info(r)

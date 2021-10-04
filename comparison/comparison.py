@@ -25,7 +25,7 @@ class Comparator():
         self.mapped_columns = mapped_columns
         self.secret = coalesce(secret, config.MPI_SERVICE_SECRET_NAME)
         self.mpi_vectors_table = coalesce(mpi_vectors_table, config.MPI_VECTORS_TABLE)
-        self.preprocessed_table = coalesce(preprocessed_table, config.BIGQUERY_TEST_PREPROCESSED_TABLE)
+        self.preprocessed_table = coalesce(preprocessed_table, config.BIGQUERY_TEST_TABLE)
         for kwarg in kwargs:
             if hasattr(self, kwarg):
                 self.kwarg = kwargs[kwarg]
@@ -44,6 +44,7 @@ class Comparator():
         WITH
         {SELECT_DISTINCT_IND},
         {JOIN_PREPROCESSED}
+        SELECT * FROM comparsion_cte;
         """
 
     
