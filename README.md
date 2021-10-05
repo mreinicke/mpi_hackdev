@@ -23,7 +23,7 @@ Windows CLI
 Set-Variable -Name "PROJECT" -Value ""
 Set-Variable -Name "GCSLOGDIR" -VALUE ""
 Set-Variable -Name "PIPELINE" -VALUE ""
-Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/$PIPELINE:latest"
+Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/<PIPELINE>:latest"
 gcloud builds submit --gcs-log-dir $GCSLOGDIR --tag $TEMPLATE_IMAGE .
 ```
 
@@ -42,6 +42,8 @@ gcloud dataflow flex-template build $TEMPLATE_PATH --image "$TEMPLATE_IMAGE" --s
 
 ## Run Flex Template
 ```powershell
+Set-Variable -Name "TEMP_LOCATION" -Value "gs://$BUCKET/dataflow/temp"
+Set-Variable -Name "STAGING_LOCATION" -Value "gs://$BUCKET/dataflow/staging"
 
-gcloud dataflow flex-template run "<pipeline-name>-`date +%Y%m%d-%H%M%S` " --template-file-gcs-location $TEMPLATE_PATH --parameters <parameter_name>=<parameter_value>...repeat_for_ea --region "$REGION" --project ut-dws-udrc-dev --setup-file setup.py
+gcloud dataflow flex-template run "<pipeline-name>-`date +%Y%m%d-%H%M%S` " --template-file-gcs-location $TEMPLATE_PATH --parameters <parameter_name>=<parameter_value>...repeat_for_ea --region "$REGION" --project ut-dws-udrc-dev --temp-location $TEMP_LOCATION --staging-location $STAGING_LOCATION
 ```

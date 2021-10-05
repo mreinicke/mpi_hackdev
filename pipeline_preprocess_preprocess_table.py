@@ -61,6 +61,7 @@ def run(beam_options, args, secret, context, save_main_session=True):
 
 
 if __name__ == "__main__":
+    logger.info("Python file Main entrypoint.")
     # Setup Pipeline Options & Command Line Arguments
     parser_factory = CustomArgParserFactory()
     parser = parser_factory()
