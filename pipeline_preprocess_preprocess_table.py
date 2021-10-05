@@ -58,9 +58,6 @@ def run(beam_options, args, secret, context, save_main_session=True):
             ))
         )
 
-        return pipeline.run()
-
-
 
 
 if __name__ == "__main__":

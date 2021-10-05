@@ -25,14 +25,8 @@ class PreprocessTableFn(beam.DoFn):
         super().__init__()
 
 
-    def start_bundle(self):
-        self.bigquery_client = get_bigquery_client(secret=self.secret)
-
-
     def process(self, *args):
+        self.bigquery_client = get_bigquery_client(secret=self.secret)
         res = preprocess_table(context=self.context, client=self.bigquery_client)
         assert res is not None, res
-
-
-    def finish_bundle(self):
         self.bigquery_client.close()

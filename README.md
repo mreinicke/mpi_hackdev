@@ -20,9 +20,10 @@ Windows CLI
 [ref](https://cloud.google.com/sdk/gcloud/reference/builds/submit)
 ```powershell
 # Powershell
-Set-Variable -Name "PROJECT" -Value "ut-dws-udrc-dev"
-Set-Variable -Name "GCSLOGDIR" -VALUE "gs://mpi-dev-bucket/logging"
-Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/preprocess_table:latest"
+Set-Variable -Name "PROJECT" -Value ""
+Set-Variable -Name "GCSLOGDIR" -VALUE ""
+Set-Variable -Name "PIPELINE" -VALUE ""
+Set-Variable -Name "TEMPLATE_IMAGE" -Value "gcr.io/$PROJECT/dataflow/$PIPELINE:latest"
 gcloud builds submit --gcs-log-dir $GCSLOGDIR --tag $TEMPLATE_IMAGE .
 ```
 

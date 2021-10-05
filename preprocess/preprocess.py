@@ -25,7 +25,7 @@ def preprocess_table(context: Context, client: None = bigquery.Client):
     query, tablename = compose_preprocessed_table_query(context)
 
     logger.info(f'Sending query: {query}')
-    err, res = send_query(query, verbose=True)
+    err, res = send_query(query, verbose=True, client=client)
     if err is not None:
         raise err
     
