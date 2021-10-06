@@ -10,8 +10,8 @@ from typing import List, Optional
 import json
 import time
 
-from ..utils.embeds import AlphabetVectorizer
-from ..settings import config
+from utils.embeds import AlphabetVectorizer
+from settings import config
 
 #################
 ###Data Models###

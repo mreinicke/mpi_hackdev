@@ -2,16 +2,16 @@
 
 import pytest
 
-from ..preprocess.sql import compose_preprocessing_query, compose_preprocessed_table_query
-from ..preprocess.preprocess import preprocess_table
-from ..gcp.client import get_bigquery_client
-from ..gcp.models import Context
+from preprocess.sql import compose_preprocessing_query, compose_preprocessed_table_query
+from preprocess.preprocess import preprocess_table
+from gcp.client import get_bigquery_client
+from gcp.models import Context
 
 from uuid import uuid4
 from random import choice
 import json
 
-from ..settings import config
+from settings import config
 
 import logging 
 logger = logging.getLogger(__name__)

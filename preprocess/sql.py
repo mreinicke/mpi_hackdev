@@ -1,6 +1,6 @@
 # preprocess.py
 
-from .. gcp.models import Context
+from gcp.models import Context
 
 from copy import copy
 

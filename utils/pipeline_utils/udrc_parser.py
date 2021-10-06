@@ -5,7 +5,7 @@ Parser with sensible defaults.  Pipelines may not use all arguments.
 
 import argparse
 
-from ...gcp.models import Context
+from gcp.models import Context
 
 # Control Classes - Handle argument parsing and pipeline setup
 class CustomArgParserFactory():
