@@ -1,0 +1,5 @@
+pydantic[dotenv]
+google-cloud-bigquery
+google-cloud-storage
+google-cloud-firestore
+google-cloud-secret-manager

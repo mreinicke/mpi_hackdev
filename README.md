@@ -36,7 +36,7 @@ Set-Variable -Name "SUBNETWORK" -Value ""
 Set-Variable -Name "BUCKET" -Value ""
 Set-Variable -Name "SERVICE_ACCOUNT_EMAIL" -Value ""
 Set-Variable -Name "TEMPLATE_PATH" -Value "gs://$BUCKET/dataflow/templates/<pipeline_name>.json"
-Set-Variable -Name "METADATA_FILE" -Value "<metadata_file>.json"
+Set-Variable -Name "METADATA_FILE" -Value "<path_to_metadata_file>.json"
 gcloud dataflow flex-template build $TEMPLATE_PATH --image "$TEMPLATE_IMAGE" --sdk-language "PYTHON" --metadata-file $METADATA_FILE --network $NETWORK --subnetwork $SUBNETWORK --project $PROJECT --worker-region $REGION --service-account-email $SERVICE_ACCOUNT_EMAIL
 ```
 

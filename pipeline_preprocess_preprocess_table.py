@@ -7,14 +7,47 @@ Rebuild search tree from MPI Vectors table.
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
-from preprocess.pipeline.local_utils import PreprocessTableFn
-from gcp.models import Context
-from tests.test_preprocessing import generate_raw_ui_message
-from utils.pipeline_utils import CustomArgParserFactory, LogPipelineOptionsFn
-from settings import config
+import json
+from uuid import uuid4
+from random import choice
+
+from mpi.preprocess.pipeline.local_utils import PreprocessTableFn
+from mpi.utils.pipeline_utils import CustomArgParserFactory, LogPipelineOptionsFn
+from mpi.gcp.models import Context
+from mpi.settings import config
+
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+## DEBUG - Deprecate
+def generate_raw_ui_message(tablename: str = config.BIGQUERY_TEST_TABLE) -> str:
+    return json.dumps(
+        {
+            "sourceTable": tablename,
+            # "sourceTable": BIGQUERY_LARGE,
+            "guid": str(uuid4()),
+            'partner': choice(['USHE', 'USBE', 'UDOH', 'ADHOC', 'USTC']),
+            "operation":"new",
+            "destination":"SPLIT_1_OF_2_LINKED_USBE_HS_COHORT_COMPLETION_SAMPLE",
+            "columns":[
+                {"name":"STUDENT_ID","outputs":{}},
+                {"name":"COHORT_TYPE","outputs":{"DI":{"name":"COHORT_TYPE"}}},
+                {"name":"COHORT_YEAR","outputs":{"DI":{"name":"COHORT_YEAR"}}},
+                {"name":"DISTRICT_ID","outputs":{"DI":{"name":"DISTRICT_ID"}}},
+                {"name":"SCHOOL_ID","outputs":{"DI":{"name":"SCHOOL_ID"}}},
+                {"name":"SCHOOL_NBR","outputs":{"DI":{"name":"SCHOOL_NBR"}}},
+                {"name":"HS_COMPLETION_STATUS","outputs":{"DI":{"name":"HS_COMPLETION_STATUS"}}},
+                {"name":"ENTRY_DATE","outputs":{"DI":{"name":"ENTRY_DATE"}}},
+                {"name":"SCHOOL_YEAR","outputs":{"DI":{"name":"SCHOOL_YEAR"}}},
+                {"name":"FIRST_NAME","outputs":{"MPI":{"name":"first_name"}}},
+                {"name":"LAST_NAME","outputs":{"MPI":{"name":"last_name"}}},
+                {"name":"SSN","outputs":{"MPI":{"name":"ssn"}}},
+            ]
+        }
+    )
+
 
 
 # Create Pipeline

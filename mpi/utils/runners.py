@@ -1,9 +1,6 @@
 # runners.py
 
-import time
-
-from google.cloud import bigquery
-from gcp.client import get_bigquery_client
+from mpi.gcp.client import get_bigquery_client
 
 import asyncio 
 from functools import wraps, partial
@@ -46,7 +43,7 @@ def send_query(query: str, verbose=False, client=None, no_results=False) -> Tupl
     if client is None:
         client = get_bigquery_client()
 
-    query_job = client.query(query)
+    query_job = client.query(query=query)
 
     if verbose:
         llog.info(f'Sending query: {query}')

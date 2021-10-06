@@ -1,13 +1,13 @@
 #test_utils.py
 
 import asyncio
-from ..utils.runners import (
+from mpi.utils.runners import (
     async_wrap, 
     logger_wrap, 
     send_query, 
     QueueJobHander,
 )
-from ..utils.embeds import AlphabetVectorizer
+from mpi.utils.embeds import AlphabetVectorizer
 
 import logging
 
@@ -35,8 +35,8 @@ def test_logger_wrapped_function():
 
 
 def test_send_query():
-    query = "SELECT 1 FROM DUAL;"
-    res, err = send_query(query)
+    query = "SELECT * FROM `ut-dws-udrc-dev.ADHOC.GRADUATES_002D66FA-300A-4018-814F-A68E07D811A1`;"
+    err, res = send_query(query, client=None, verbose=True)
     assert err is None
     assert res is not None  # Change to ensure (1) is returning as a row
 

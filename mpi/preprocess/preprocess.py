@@ -5,10 +5,10 @@
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
-from preprocess.sql import compose_preprocessed_table_query, compose_delete_table_if_exists
-from gcp.client import get_bigquery_client
-from gcp.models import Context
-from utils.runners import logger_wrap, send_query
+from mpi.preprocess.sql import compose_preprocessed_table_query, compose_delete_table_if_exists
+from mpi.gcp.models import Context
+from mpi.gcp.client import get_bigquery_client
+from mpi.utils.runners import logger_wrap, send_query
 
 from typing import Tuple
 
@@ -18,24 +18,22 @@ logger = getLogger(__name__)
 
 
 @logger_wrap
-def preprocess_table(context: Context, client: None = bigquery.Client):
-    if client is None:
-        client = get_bigquery_client()
+def preprocess_table(context: Context, client: bigquery.Client = None):
 
     query, tablename = compose_preprocessed_table_query(context)
     delquery = compose_delete_table_if_exists(tablename=tablename)
 
     logger.info(f'Sending delete query: {delquery}')
-    err, _ = send_query(delquery, verbose=True, client=client)
+    err, _ = send_query(query=delquery, verbose=True, client=client)
     if err is not None:
         raise err
 
     logger.info(f'Sending query: {query}')
-    err, _ = send_query(query, verbose=True, client=client)
+    err, _ = send_query(query=query, verbose=True, client=client)
     if err is not None:
         raise err
     
-    err, tablename = verify_table_created(client, tablename)
+    err, tablename = verify_table_created(client=client, tablename=tablename)
     if err is not None:
         raise err
 
@@ -43,6 +41,9 @@ def preprocess_table(context: Context, client: None = bigquery.Client):
     
 
 def verify_table_created(client, tablename) -> Tuple[BaseException, str]:
+    if client is None:
+        client = get_bigquery_client()
+
     try:
         client.get_table(tablename)
         logger.info('Table creation successful')

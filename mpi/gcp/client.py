@@ -4,7 +4,7 @@ client.py
 Create clients for necessary services.
 """
 
-from settings.settings import Settings
+from mpi.settings.settings import Settings
 from typing import Set
 from google.cloud import bigquery
 from google.cloud import storage
@@ -25,7 +25,6 @@ def get_bigquery_client(secret=None) -> bigquery.Client:
     Returns:
         bigquery.Client: [description]
     """
-
     return bigquery.Client(credentials=get_service_account_credentials(secret))
 
 
