@@ -5,7 +5,6 @@ Functions and pipeline wrappers to update search
 reference tables and build search trees for indexing.
 """
 
-from gcp.client import get_bigquery_client
 from typing import Tuple
 from google.cloud import bigquery
 from google.cloud import storage
@@ -16,9 +15,8 @@ import pickle
 import tempfile
 from typing import Tuple
 
-from utils.runners import send_query
-
-from settings import config
+from ...utils.runners import send_query
+from ...settings import config
 
 import logging
 logger = logging.getLogger(__name__)

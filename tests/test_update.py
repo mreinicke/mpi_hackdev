@@ -3,18 +3,15 @@
 import pytest
 import json
 
-from update import update_preprocessed_table
-from gcp.client import get_firestore_client
-
-
-from update.update import (
+from ..update import update_preprocessed_table
+from ..update.update import (
     serialize_rows_from_table,
     update_firestore_from_table,
     push_rows_to_firestore
 )
-from gcp.models import Context
-
-from settings import config
+from ..gcp.client import get_firestore_client
+from ..gcp.models import Context
+from ..settings import config
 
 import logging
 logger = logging.getLogger(__name__)

@@ -3,7 +3,7 @@
 from typing import Dict, Tuple
 import pytest
 
-import settings 
+from ..settings import config
 import logging
 
 logger = logging.getLogger(__name__)

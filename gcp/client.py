@@ -4,7 +4,7 @@ client.py
 Create clients for necessary services.
 """
 
-from settings.settings import Settings
+from ..settings.settings import Settings
 from typing import Set
 from google.cloud import bigquery
 from google.cloud import storage

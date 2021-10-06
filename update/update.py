@@ -12,16 +12,15 @@ from google.cloud import bigquery
 from google.cloud import firestore
 
 from google.cloud.firestore_v1 import collection, base_document
-from utils.loaders import create_generator_from_iterators
-from utils.runners import send_query, QueueJobHander, logger_wrap
-from utils.batch import Batch
-
-from gcp.client import get_firestore_client
-from gcp.models import NoSQLSerializer, Context
+from ..utils.loaders import create_generator_from_iterators
+from ..utils.runners import send_query, QueueJobHander, logger_wrap
+from ..utils.batch import Batch
+from ..gcp.client import get_firestore_client
+from ..gcp.models import NoSQLSerializer, Context
 
 from queue import Queue
 
-from settings import config
+from ..settings import config
 
 import logging
 logger = logging.getLogger(__name__)

@@ -2,9 +2,9 @@
 
 
 import pytest
-from settings import config
+from ..settings import config
 
-from utils.loaders import load_bigquery_table, create_generator_from_iterators
+from ..utils.loaders import load_bigquery_table, create_generator_from_iterators
 
 def generate_input():
     return {

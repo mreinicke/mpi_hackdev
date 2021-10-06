@@ -1,8 +1,8 @@
 # test_compare.py
 
-from comparison.comparison import Comparator
-from comparison.sql import build_select_distinct_ind, build_join_preprocessed
-from utils.runners import send_query
+from ..comparison.comparison import Comparator
+from ..comparison.sql import build_select_distinct_ind, build_join_preprocessed
+from ..utils.runners import send_query
 import logging
 
 logger = logging.getLogger(__name__)

@@ -15,19 +15,17 @@
 """
 from attr import has
 from google.cloud.firestore_v1.base_collection import BaseCollectionReference
-from google.protobuf.message import Error
-from gcp.client import get_bigquery_client, get_firestore_client, get_gcs_client
-from utils.iterators import coalesce
-from utils.runners import send_query
-from utils.embeds import AlphabetVectorizer
+from ..gcp.client import get_bigquery_client, get_firestore_client, get_gcs_client
+from ..utils.iterators import coalesce
+from ..utils.runners import send_query
+from ..utils.embeds import AlphabetVectorizer
+from ..index.search.search_tree import load_unpickle_tree, search_for_neighbor_mpis
 
 from collections import namedtuple
 from typing import List, Tuple
 import numpy as np
 
-from index.search.search_tree import load_unpickle_tree, search_for_neighbor_mpis
-
-from settings import config
+from ..settings import config
 import logging
 
 logger = logging.getLogger(__name__)

@@ -7,7 +7,7 @@ from uuid import uuid4
 from random import choice
 import json
 
-from gcp.models import (
+from ..gcp.models import (
     MPIRecord,
     MPIVector,
     filter_dict_for_allowed_pii,
@@ -16,8 +16,7 @@ from gcp.models import (
     NoSQLSerializer,
     Context
     )
-
-from settings import config
+from ..settings import config
 
 import logging
 logger = logging.getLogger(__name__)

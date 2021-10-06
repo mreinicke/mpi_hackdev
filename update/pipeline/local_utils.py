@@ -1,14 +1,14 @@
 """firestore_to_bigquery.local_utils
 """
-from utils.runners import send_query
-from gcp.client import get_bigquery_client, get_firestore_client
-from gcp.models import MPIVector
+from ...utils.runners import send_query
+from ...gcp.client import get_bigquery_client, get_firestore_client
+from ...gcp.models import MPIVector
 import apache_beam as beam
 from google.cloud import firestore
 import math
 from itertools import product
 import pandas as pd
-from settings import Settings
+from ...settings import Settings
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,16 +1,17 @@
 # test_update_mpi_vec.py
 import pytest
 
-from gcp.models import Context
-from gcp.client import get_firestore_client, get_bigquery_client
+from ..gcp.models import Context
+from ..gcp.client import get_firestore_client
+from ..utils.runners import send_query
+from ..utils.pipeline_utils.udrc_parser import create_context_from_string
+from ..update.pipeline.local_utils import MPIVectorizer
+from ..pipeline_update_firestore_to_bigquery import run_pipeline
 
-from utils.runners import send_query
-from update.firestore_to_bigquery.local_utils import create_context_from_string, MPIVectorizer
-from pipeline_update_firestore_to_bigquery import run_pipeline
 import argparse
 import json 
 
-from settings import config
+from ..settings import config
 
 import logging 
 logger = logging.getLogger(__name__)

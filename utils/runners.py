@@ -3,7 +3,7 @@
 import time
 
 from google.cloud import bigquery
-from gcp.client import get_bigquery_client
+from ..gcp.client import get_bigquery_client
 
 import asyncio 
 from functools import wraps, partial

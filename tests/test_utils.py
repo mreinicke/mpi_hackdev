@@ -1,13 +1,13 @@
 #test_utils.py
 
 import asyncio
-from utils.runners import (
+from ..utils.runners import (
     async_wrap, 
     logger_wrap, 
     send_query, 
     QueueJobHander,
 )
-from utils.embeds import AlphabetVectorizer
+from ..utils.embeds import AlphabetVectorizer
 
 import logging
 

@@ -3,9 +3,9 @@
     prepare assets in context for update procedures
 """
 
-from gcp.models import Context
-from utils.loaders import load_bigquery_table
-from utils.runners import send_query
+from ..gcp.models import Context
+from ..utils.loaders import load_bigquery_table
+from ..utils.runners import send_query
 
 import logging
 logger = logging.getLogger(__name__)

@@ -12,12 +12,12 @@ rownum-mpi-[field_comparisons]-frequency_score
 """
 
 from typing import List
-from utils.iterators import coalesce
-from comparison.sql import (
+from ..utils.iterators import coalesce
+from ..comparison.sql import (
     build_select_distinct_ind,
     build_join_preprocessed,
 )
-from settings import config
+from ..settings import config
 
 
 class Comparator():

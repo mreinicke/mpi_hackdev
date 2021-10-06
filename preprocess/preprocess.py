@@ -5,14 +5,14 @@
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
-from preprocess.sql import compose_preprocessed_table_query
-from gcp.client import get_bigquery_client
-from gcp.models import Context
-
-from utils.runners import logger_wrap, send_query
-from logging import getLogger
+from ..preprocess.sql import compose_preprocessed_table_query
+from ..gcp.client import get_bigquery_client
+from ..gcp.models import Context
+from ..utils.runners import logger_wrap, send_query
 
 from typing import Tuple
+
+from logging import getLogger
 
 logger = getLogger(__name__)
 

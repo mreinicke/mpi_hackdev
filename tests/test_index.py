@@ -2,21 +2,14 @@
 
 ## NOTE: Tests are not production safe.  They may destroy, empty, or replace tables.
 
-from utils.runners import send_query
-from gcp.client import get_bigquery_client, get_gcs_client
-
-import pytest 
-from typing import Tuple
-import numpy as np
-
-from utils.embeds import AlphabetVectorizer
-
-from index.index import (
+from ..utils.runners import send_query
+from ..gcp.client import get_bigquery_client, get_gcs_client
+from ..utils.embeds import AlphabetVectorizer
+from ..index.index import (
     BlockIndexer,
     NameIndexer,
 )
-
-from index.search.search_tree import (
+from ..index.search.search_tree import (
     get_name_match_vectors,
     build_tree_from_vectors,
     load_unpickle_tree,
@@ -24,10 +17,18 @@ from index.search.search_tree import (
     search_for_neighbor_mpis
 )
 
+import pytest 
+from typing import Tuple
+import numpy as np
+
+
+
+
+
 import logging
 logger = logging.getLogger(__name__)
 
-from settings import config
+from ..settings import config
 
 
 @pytest.fixture

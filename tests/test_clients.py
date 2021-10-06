@@ -1,5 +1,5 @@
 from google.cloud import bigquery
-from gcp.client import (
+from ..gcp.client import (
     get_bigquery_client, 
     get_gcs_client, 
     get_firestore_client,
@@ -12,7 +12,7 @@ import pytest
 import logging
 logger = logging.getLogger(__name__)
 
-from settings import config
+from ..settings import config
 
 
 def test_secrets_client():

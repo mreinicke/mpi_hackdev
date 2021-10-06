@@ -8,20 +8,20 @@ given context.
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
-from update.pipeline.local_utils import (
+from .update.pipeline.local_utils import (
     create_select_mpi_query_from_context,
     create_delete_mpis_from_mpi_list,
     MPIVectorizer,
     MPIVectorTableUpdate
 )
 
-from utils.runners import send_query
-from utils.pipeline_utils import CustomArgParserFactory, LogPipelineOptionsFn
-from gcp.client import get_bigquery_client
-from gcp.models import Context
+from .utils.runners import send_query
+from .utils.pipeline_utils import CustomArgParserFactory, LogPipelineOptionsFn
+from .gcp.client import get_bigquery_client
+from .gcp.models import Context
 
-from settings import config
-from tests.test_preprocessing import generate_raw_ui_message  ##DEBUG ONLY
+from .settings import config
+from .tests.test_preprocessing import generate_raw_ui_message  ##DEBUG ONLY
 
 import logging
 
