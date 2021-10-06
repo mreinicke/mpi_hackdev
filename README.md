@@ -42,8 +42,8 @@ gcloud dataflow flex-template build $TEMPLATE_PATH --image "$TEMPLATE_IMAGE" --s
 
 ## Run Flex Template
 ```powershell
-Set-Variable -Name "TEMP_LOCATION" -Value "gs://$BUCKET/dataflow/temp"
-Set-Variable -Name "STAGING_LOCATION" -Value "gs://$BUCKET/dataflow/staging"
+Set-Variable -Name "TEMP_LOCATION" -Value "gs://$BUCKET/dataflow/temp/"
+Set-Variable -Name "STAGING_LOCATION" -Value "gs://$BUCKET/dataflow/staging/"
 
 gcloud dataflow flex-template run "<pipeline-name>-`date +%Y%m%d-%H%M%S` " --template-file-gcs-location $TEMPLATE_PATH --parameters <parameter_name>=<parameter_value>...repeat_for_ea --region "$REGION" --project ut-dws-udrc-dev --temp-location $TEMP_LOCATION --staging-location $STAGING_LOCATION
 ```

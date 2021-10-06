@@ -89,7 +89,6 @@ class CustomCommands(setuptools.Command):
 # restriction is specified.
 REQUIRED_PACKAGES = [
     'numpy',
-    'apache-beam',
     'fastavro',
     'google-api-core',
     'google-api-python-client',
@@ -122,7 +121,6 @@ REQUIRED_PACKAGES = [
     'pandas',
     'proto-plus',
     'protobuf',
-    'pyarrow',
     'pydantic',
     'pydot',
     'requests',
