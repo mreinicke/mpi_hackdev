@@ -4,7 +4,7 @@ FROM gcr.io/dataflow-templates-base/python3-template-launcher-base
 ARG WORKDIR=/dataflow/template
 RUN mkdir -p ${WORKDIR}
 
-COPY . /dataflow/template/
+COPY . ${WORKDIR}
 
 WORKDIR ${WORKDIR}
 
@@ -12,7 +12,7 @@ ENV FLEX_TEMPLATE_PYTHON_REQUIREMENTS_FILE="${WORKDIR}/requirements.txt"
 ENV FLEX_TEMPLATE_PYTHON_SETUP_FILE="${WORKDIR}/setup.py"
 ENV FLEX_TEMPLATE_PYTHON_PY_FILE="${WORKDIR}/pipeline_preprocess_preprocess_table.py"
 
-RUN pip install --no-cache-dir -U apache-beam==2.32.0
+RUN pip install --no-cache-dir -U apache-beam[gcp]
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y libffi-dev git \

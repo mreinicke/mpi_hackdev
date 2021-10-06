@@ -45,10 +45,11 @@ def test_mpi_vectorizer(valid_mpis):
         assert vect.process(mpi) is not None
 
 
-def test_pipeline():
-    run_pipeline()
-    # Delete all mpi vectors in table where mpi in mpi_list
-    mpi_vector_delete_query = f"DELETE FROM `{config.MPI_VECTORS_TABLE}` WHERE 1=1"
-    err, _ = send_query(mpi_vector_delete_query, verbose=True)
-    if err is not None:
-        raise err
+
+# def test_pipeline():
+#     run_pipeline()
+#     # Delete all mpi vectors in table where mpi in mpi_list
+#     mpi_vector_delete_query = f"DELETE FROM `{config.MPI_VECTORS_TABLE}` WHERE 1=1"
+#     err, _ = send_query(mpi_vector_delete_query, verbose=True)
+#     if err is not None:
+#         raise err

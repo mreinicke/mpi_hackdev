@@ -129,4 +129,4 @@ def test_mpi_vector_model_sql(example_data):
     rows, context = example_data
     mvect = MPIVector(**rows[0])
     assert mvect is not None
-    assert len(mvect.as_sql()) > 0
+    assert len(mvect.as_sql(tablename='mpi_vec_table?')) > 0

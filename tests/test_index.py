@@ -21,10 +21,6 @@ import pytest
 from typing import Tuple
 import numpy as np
 
-
-
-
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -33,7 +29,6 @@ from ..settings import config
 
 @pytest.fixture
 def bigquery_client():
-    from gcp.client import get_bigquery_client
     client = get_bigquery_client()
     return client
 

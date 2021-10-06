@@ -1,10 +1,10 @@
 # preprocess.pipeline.local_utils.py
 
 import apache_beam as beam
-from gcp.client import get_bigquery_client
-from gcp.models import Context
-from preprocess.preprocess import preprocess_table
-from settings import Settings
+from ...gcp.client import get_bigquery_client
+from ...gcp.models import Context
+from ...preprocess.preprocess import preprocess_table
+from ...settings import Settings
 from typing import List, Tuple
 import logging
 
