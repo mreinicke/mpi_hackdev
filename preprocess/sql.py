@@ -102,3 +102,9 @@ def compose_preprocessed_table_query(context: Context):
     query = f"CREATE TABLE `{output_table_name}` AS "\
             + compose_preprocessing_query(context)
     return query, output_table_name
+
+
+def compose_delete_table_if_exists(tablename: str):
+    output_table_name = f"{tablename.strip('`')}_preprocessed"
+    query = f"DROP TABLE IF EXISTS {output_table_name}"
+    

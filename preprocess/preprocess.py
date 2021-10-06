@@ -5,7 +5,7 @@
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
-from preprocess.sql import compose_preprocessed_table_query
+from preprocess.sql import compose_preprocessed_table_query, compose_delete_table_if_exists
 from gcp.client import get_bigquery_client
 from gcp.models import Context
 from utils.runners import logger_wrap, send_query
@@ -23,9 +23,15 @@ def preprocess_table(context: Context, client: None = bigquery.Client):
         client = get_bigquery_client()
 
     query, tablename = compose_preprocessed_table_query(context)
+    delquery = compose_delete_table_if_exists(tablename=tablename)
+
+    logger.info(f'Sending delete query: {delquery}')
+    err, _ = send_query(delquery, verbose=True, client=client)
+    if err is not None:
+        raise err
 
     logger.info(f'Sending query: {query}')
-    err, res = send_query(query, verbose=True, client=client)
+    err, _ = send_query(query, verbose=True, client=client)
     if err is not None:
         raise err
     
