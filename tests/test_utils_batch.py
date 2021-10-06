@@ -2,7 +2,7 @@
 
 import pytest 
 
-from ..utils.batch import Batch
+from mpi.utils.batch import Batch
 
 
 @pytest.fixture 

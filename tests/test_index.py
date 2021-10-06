@@ -2,14 +2,14 @@
 
 ## NOTE: Tests are not production safe.  They may destroy, empty, or replace tables.
 
-from ..utils.runners import send_query
-from ..gcp.client import get_bigquery_client, get_gcs_client
-from ..utils.embeds import AlphabetVectorizer
-from ..index.index import (
+from mpi.utils.runners import send_query
+from mpi.gcp.client import get_bigquery_client, get_gcs_client
+from mpi.utils.embeds import AlphabetVectorizer
+from mpi.index.index import (
     BlockIndexer,
     NameIndexer,
 )
-from ..index.search.search_tree import (
+from mpi.index.search.search_tree import (
     get_name_match_vectors,
     build_tree_from_vectors,
     load_unpickle_tree,

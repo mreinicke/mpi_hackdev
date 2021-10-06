@@ -2,3 +2,6 @@
 [2021-10-06 11:57:17,693] INFO | apache_beam.runners.dataflow.dataflow_runner: 2021-10-06T17:57:12.589Z: JOB_MESSAGE_BASIC: Worker pool stopped.
 [2021-10-06 11:57:17,693] INFO | apache_beam.runners.dataflow.dataflow_runner: 2021-10-06T17:57:12.615Z: JOB_MESSAGE_DEBUG: Tearing down pending resources...
 [2021-10-06 11:57:22,919] INFO | apache_beam.runners.dataflow.dataflow_runner: Job 2021-10-06_10_50_49-3169765682527040564 is in state JOB_STATE_DONE
+[2021-10-06 13:35:15,576] INFO | mpi.settings.settings: Configured logging loglevel DEBUG
+[2021-10-06 13:35:15,576] INFO | tests.conftest: Setting up pytest.
+[2021-10-06 13:35:20,762] DEBUG | mpi.utils.embeds: Initializing AlphabetVectorizer with default index.
